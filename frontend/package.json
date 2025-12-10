@@ -11,19 +11,20 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "material-symbols": "^0.40.2",
     "pinia": "^2.1.7",
     "vue": "^3.3.11",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.3.3",
-    "@vitejs/plugin-vue": "^4.5.2",
+    "@vitejs/plugin-vue": "^5.2.4",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vue": "^9.33.0",
     "prettier": "^3.7.4",
-    "vite": "^5.0.10",
+    "vite": "^6.4.1",
     "vite-plugin-vuetify": "^2.1.2",
     "vuetify": "^3.11.3"
   }
