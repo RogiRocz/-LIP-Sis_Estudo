@@ -11,6 +11,8 @@ import BookIcon from '@/assets/book-icon.svg'
       <li>
         <img :src="BookIcon"/>
         <span><a href="#">Disciplinas</a></span>
+        <span><a href="#">Disciplinas</a></span>
+        <span><a href="#">Disciplinas</a></span>
       </li>
     </ul>
   </nav>
@@ -18,7 +20,6 @@ import BookIcon from '@/assets/book-icon.svg'
 
 <style scoped>
 .navbar {
-  width: 100vw;
   background: linear-gradient(to right, #915fed, #5c26bf, #3d79f2);
   padding: 12px 24px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
