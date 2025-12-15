@@ -15,42 +15,38 @@
 		</template>
 		<template v-slot:append>
 			<v-spacer></v-spacer>
-			<div v-if="nameDisplay !== 'xs'">
-				<v-btn
-					v-for="(tab, i) in tabsNavigation"
-					:key="i"
-					:prepend-icon="tab.iconName"
-				>
-					{{ tab.name }}
-				</v-btn>
+			<div v-if="nameDisplay === 'xs'">
+				<v-app-bar-nav-icon
+					@click="appBarStore.toggleDrawer"
+				></v-app-bar-nav-icon>
 			</div>
 			<div v-else>
-				<v-menu v-model="menu" :close-on-content-on="false" location="end">
-					<template v-slot:activator="{ props }">
-						<v-app-bar-nav-icon v-bind="props"></v-app-bar-nav-icon>
-					</template>
-					<v-list>
-						<v-list-item
-							v-for="(tab, i) in tabsNavigation"
-							:key="i"
-							:title="tab.name"
-							:prepend-icon="tab.iconName"
-						></v-list-item>
-					</v-list>
-				</v-menu>
+				<v-tabs :v-model="route.name">
+					<v-tab
+						v-for="(tab, i) in tabsNavigation"
+						:key="i"
+						:to="{ name: tab.routeName }"
+					>
+						<v-icon :icon="tab.iconName" class="mr-2"></v-icon>
+						{{ tab.name }}
+					</v-tab>
+				</v-tabs>
 			</div>
 		</template>
 	</v-app-bar>
 </template>
 
 <script setup lang="ts">
-import { tabsNavigation } from "@/utils/tabsNavigation";
-import { ref } from "vue";
-import { useDisplay } from "vuetify";
+import { useAppBarStore } from '@/stores/useAppBarStore'
+import { tabsNavigation } from '@/utils/tabsNavigation'
+import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 
-const { name: nameDisplay } = useDisplay();
 
-const menu = ref(false);
+const appBarStore = useAppBarStore()
+const { nameDisplay } = storeToRefs(appBarStore)
+
+const route = useRoute()
 </script>
 
 <style scoped>
@@ -71,5 +67,4 @@ const menu = ref(false);
 .app-bar-titulo > * {
 	margin: auto 1vw;
 }
-
 </style>
