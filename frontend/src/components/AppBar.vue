@@ -4,7 +4,7 @@
 			<v-container class="pa-0">
 				<v-row align="center">
 					<v-col cols="auto" class="app-bar-titulo">
-						<v-icon id="icone" icon="book_ribbon" class="mr-2"></v-icon>
+						<v-icon icon="book_ribbon" class="mr-2"></v-icon>
 						<div>
 							<v-app-bar-title>StudyFlow</v-app-bar-title>
 							<span>Aprenda no momento certo</span>
