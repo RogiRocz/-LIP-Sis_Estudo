@@ -3,7 +3,12 @@ import { useUserStore } from '@/stores/useUserStore'
 import { storeToRefs } from 'pinia'
 
 const routes = [
-	{ path: '/', name: 'home', component: import('@/views/HomeView.vue') },
+	{
+		path: '/',
+		name: 'home',
+		component: import('@/views/HomeView.vue'),
+		redirect: { name: 'disciplina' },
+	},
 	{ path: '/login', name: 'login', component: import('@/views/LoginView.vue') },
 	{
 		path: '/disciplina',
