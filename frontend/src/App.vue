@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import AppBar from "./components/AppBar.vue";
+import AppBar from './components/AppBar.vue'
 </script>
 
 <template>
 	<v-app>
 		<AppBar />
 		<v-main>
-			<div>
-				<p>alguma coisa</p>
-			</div>
-			<!-- <router-view></router-view> -->
+			<router-view v-slot="{ Component }">
+				<v-slide-x-transition mode="out-in">
+					<component :is="Component" />
+				</v-slide-x-transition>
+			</router-view>
 		</v-main>
 	</v-app>
 </template>
