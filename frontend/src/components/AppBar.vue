@@ -50,6 +50,10 @@ const route = useRoute()
 </script>
 
 <style scoped>
+.v-app-bar > * {
+	color: white;
+}
+
 .gradient-app-bar {
 	background: linear-gradient(
 		to right,
