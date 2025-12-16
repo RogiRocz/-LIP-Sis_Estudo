@@ -1,6 +1,5 @@
 <script setup>
 import BookIcon from '@/assets/book-icon.svg'
-
 </script>
 
 <template>
@@ -9,10 +8,16 @@ import BookIcon from '@/assets/book-icon.svg'
 
     <ul class="links">
       <li>
-        <img :src="BookIcon"/>
-        <span><a href="#">Disciplinas</a></span>
-        <span><a href="#">Disciplinas</a></span>
-        <span><a href="#">Disciplinas</a></span>
+        <img :src="BookIcon" />
+        <span>
+          <RouterLink to="/disciplinas">Disciplinas</RouterLink>
+        </span>
+        <span>
+          <RouterLink to="/calendario">Calendario</RouterLink>
+        </span>
+        <span>
+          <RouterLink to="/relatorios">Relatorios</RouterLink>
+        </span>
       </li>
     </ul>
   </nav>
