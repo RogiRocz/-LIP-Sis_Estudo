@@ -1,12 +1,17 @@
 <template>
-	<div>
-		<h1>Página de Login</h1>
-		<!-- Conteúdo da página de Login -->
-	</div>
+	<PageHeader :pageTitle="name" :pageDescription="description" />
 </template>
 
 <script setup lang="ts">
-// Script para LoginView
+import PageHeader from '@/components/PageHeader.vue'
+import { tabsNavigation } from '@/utils/tabsNavigation'
+import { computed } from 'vue'
+
+const currentView = computed(() =>
+	tabsNavigation.value.find((tab) => tab.routeName === 'login'),
+)
+const name = computed(() => currentView.value?.name || '')
+const description = computed(() => currentView.value?.description || '')
 </script>
 
 <style scoped>

@@ -1,14 +1,19 @@
 <template>
-	<div>
-		<h1>Página de Disciplinas</h1>
-		<!-- Conteúdo da página de Disciplinas -->
-	</div>
+	<PageHeader :pageTitle="name" :pageDescription="description" />
 </template>
 
 <script setup lang="ts">
-// Script para DisciplinaView
+import PageHeader from '@/components/PageHeader.vue'
+import { tabsNavigation } from '@/utils/tabsNavigation'
+import { computed } from 'vue'
+
+const currentView = computed(() =>
+	tabsNavigation.value.find((tab) => tab.routeName === 'disciplina'),
+)
+const name = computed(() => currentView.value?.name || '')
+const description = computed(() => currentView.value?.description || '')
 </script>
 
 <style scoped>
-/* Estilos específicos para DisciplinaView */
+
 </style>
