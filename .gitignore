@@ -25,3 +25,5 @@ yarn-error.log*
 # Others
 package-lock.json
 *.nix
+.venv/
+__pycache__
