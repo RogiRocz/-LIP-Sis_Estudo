@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Date, func
 from sqlalchemy.orm import relationship
-from src.database import Base
+from database import Base
 
 class Revisao(Base):
     __tablename__ = "Revisao"

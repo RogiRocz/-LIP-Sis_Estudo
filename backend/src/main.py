@@ -1,38 +1,35 @@
 from fastapi import FastAPI
-from src.routers import auth, user, disciplina, tema, revisao
-from src.database import Base, engine
+from routers import auth, user, disciplina, tema, revisao
+from database import Base, engine
 from sqlalchemy import text
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    with engine.connect() as connection:
-        connection.execute(text("""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text("""
             CREATE OR REPLACE FUNCTION update_revisao_status()
             RETURNS TRIGGER AS $$
             BEGIN
                 IF NEW.data_realizada IS NOT NULL THEN
-                    NEW.status := 'REALIZADA';
+                    NEW.status := '''REALIZADA''';
                 ELSIF NEW.data_prevista < CURRENT_DATE THEN
-                    NEW.status := 'ATRASADA';
+                    NEW.status := '''ATRASADA''';
                 ELSE
-                    NEW.status := 'PENDENTE';
+                    NEW.status := '''PENDENTE''';
                 END IF;
                 RETURN NEW;
             END;
             $$ LANGUAGE plpgsql;
         """))
-        connection.execute(text("""
-            DROP TRIGGER IF EXISTS trg_update_revisao_status ON "Revisao";
-        """))
-        connection.execute(text("""
+        await conn.execute(text('''DROP TRIGGER IF EXISTS trg_update_revisao_status ON "Revisao"'''))
+        await conn.execute(text("""
             CREATE TRIGGER trg_update_revisao_status
             BEFORE INSERT OR UPDATE ON "Revisao"
             FOR EACH ROW
             EXECUTE FUNCTION update_revisao_status();
         """))
-        connection.commit()
     yield
 
 app = FastAPI(lifespan=lifespan)
