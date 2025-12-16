@@ -10,7 +10,7 @@ import 'material-symbols/outlined.css'
  * gradient_end: 764ba2 (Roxo Mais Escuro - Para o App Bar)
  */
 const StudyFlowTheme = {
-	defaultTheme: 'dark',
+	defaultTheme: 'light',
 
 	themes: {
 		dark: {
@@ -35,7 +35,10 @@ const StudyFlowTheme = {
 		light: {
 			dark: false,
 			colors: {
-				background: '#FFFFFF',
+				background: 'ffffff',
+				surface: '1E1E1E',
+				primary: '17a2b8',
+				secondary: '667eea',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
