@@ -16,7 +16,8 @@ class DisciplinaUpdate(DisciplinaBase):
 class Disciplina(DisciplinaBase):
     ID: int
     usuario_id: int
-    data_criacao: datetime
+    criado_em: datetime
+    atualizado_em: datetime
 
     class Config:
         from_attributes = True

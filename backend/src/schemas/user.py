@@ -25,7 +25,8 @@ class User(UserBase):
     ID: int
     ui_theme: str
     intervalo_revisoes: str
-    data_cadastro: datetime
+    criado_em: datetime
+    atualizado_em: datetime
 
     class Config:
         from_attributes = True

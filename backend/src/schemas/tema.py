@@ -15,7 +15,8 @@ class TemaUpdate(TemaBase):
 class Tema(TemaBase):
     ID: int
     disciplina_id: int
-    data_criacao: datetime
+    criado_em: datetime
+    atualizado_em: datetime
 
     class Config:
         from_attributes = True

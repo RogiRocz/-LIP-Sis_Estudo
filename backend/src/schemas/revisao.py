@@ -20,6 +20,8 @@ class RevisaoUpdate(BaseModel):
 class Revisao(RevisaoBase):
     ID: int
     tema_id: int
+    criado_em: datetime
+    atualizado_em: datetime
 
     class Config:
         from_attributes = True
