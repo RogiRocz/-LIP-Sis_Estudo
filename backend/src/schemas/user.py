@@ -18,12 +18,12 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     senha_atual: Optional[str] = None
     nova_senha: Optional[str] = None
-    tema: Optional[str] = None
+    ui_theme: Optional[str] = None
     intervalo_revisoes: Optional[str] = None
 
 class User(UserBase):
     ID: int
-    tema: str
+    ui_theme: str
     intervalo_revisoes: str
     data_cadastro: datetime
 
