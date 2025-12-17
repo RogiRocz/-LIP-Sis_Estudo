@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response, Query
 from ..schemas.tema import Tema, TemaCreate, TemaUpdate
+from ..schemas.pagination import Page
 from ..models.user import User as UserModel
 from ..security import get_current_user
 from ..services.tema import TemaService
-from typing import List
 
 # Router for nested endpoints under /disciplinas/{disciplina_id}/temas
 disciplina_tema_router = APIRouter(prefix="/disciplinas/{disciplina_id}/temas", tags=["temas"])
@@ -15,9 +15,15 @@ tema_router = APIRouter(prefix="/temas", tags=["temas"])
 async def create_tema(disciplina_id: int, tema: TemaCreate, user: UserModel = Depends(get_current_user), service: TemaService = Depends()):
     return await service.create_tema_for_disciplina(disciplina_id, tema, user)
 
-@disciplina_tema_router.get("/", response_model=List[Tema])
-async def get_temas_by_disciplina(disciplina_id: int, user: UserModel = Depends(get_current_user), service: TemaService = Depends()):
-    return await service.get_temas_by_disciplina(disciplina_id, user.ID)
+@disciplina_tema_router.get("/", response_model=Page[Tema])
+async def get_temas_by_disciplina(
+    disciplina_id: int, 
+    user: UserModel = Depends(get_current_user), 
+    service: TemaService = Depends(),
+    page: int = Query(1, ge=1, description="Número da página"),
+    size: int = Query(10, ge=1, le=100, description="Tamanho da página")
+):
+    return await service.get_temas_by_disciplina(disciplina_id, user.ID, page, size)
 
 @tema_router.get("/{tema_id}", response_model=Tema)
 async def get_tema(tema_id: int, user: UserModel = Depends(get_current_user), service: TemaService = Depends()):

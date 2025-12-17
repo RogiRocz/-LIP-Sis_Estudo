@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from ..models.tema import Tema as TemaModel
 from ..models.disciplina import Disciplina as DisciplinaModel
 from ..models.revisao import Revisao as RevisaoModel
 from ..schemas.tema import TemaCreate, TemaUpdate
-from typing import List
+from typing import List, Tuple
 from datetime import date, timedelta
 
 class TemaRepository:
@@ -37,10 +37,16 @@ class TemaRepository:
 
         return db_tema
 
-    async def get_temas_by_disciplina_id(self, disciplina_id: int) -> List[TemaModel]:
-        query = select(TemaModel).where(TemaModel.disciplina_id == disciplina_id)
+    async def get_paginated_temas_by_disciplina_id(self, disciplina_id: int, skip: int, limit: int) -> Tuple[List[TemaModel], int]:
+        """Busca temas paginados por disciplina e a contagem total."""
+        count_query = select(func.count()).select_from(TemaModel).where(TemaModel.disciplina_id == disciplina_id)
+        total = await self.db.scalar(count_query)
+
+        query = select(TemaModel).where(TemaModel.disciplina_id == disciplina_id).offset(skip).limit(limit)
         result = await self.db.execute(query)
-        return result.scalars().all()
+        temas = result.scalars().all()
+        
+        return temas, total
 
     async def get_tema_by_id(self, tema_id: int, usuario_id: int) -> TemaModel | None:
         query = select(TemaModel).join(DisciplinaModel).where(

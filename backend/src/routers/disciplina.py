@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response, Query
 from ..schemas.disciplina import Disciplina, DisciplinaCreate, DisciplinaUpdate
+from ..schemas.pagination import Page
 from ..models.user import User as UserModel
 from ..security import get_current_user
 from ..services.disciplina import DisciplinaService
-from typing import List
 
 router = APIRouter(prefix="/disciplinas", tags=["disciplinas"])
 
@@ -11,9 +11,14 @@ router = APIRouter(prefix="/disciplinas", tags=["disciplinas"])
 async def create_disciplina(disciplina: DisciplinaCreate, user: UserModel = Depends(get_current_user), service: DisciplinaService = Depends()):
     return await service.create_disciplina(disciplina, user.ID)
 
-@router.get("/", response_model=List[Disciplina])
-async def get_disciplinas(user: UserModel = Depends(get_current_user), service: DisciplinaService = Depends()):
-    return await service.get_disciplinas(user.ID)
+@router.get("/", response_model=Page[Disciplina])
+async def get_disciplinas(
+    user: UserModel = Depends(get_current_user), 
+    service: DisciplinaService = Depends(),
+    page: int = Query(1, ge=1, description="Número da página"),
+    size: int = Query(10, ge=1, le=100, description="Tamanho da página")
+):
+    return await service.get_disciplinas(usuario_id=user.ID, page=page, size=size)
 
 @router.get("/{disciplina_id}", response_model=Disciplina)
 async def get_disciplina(disciplina_id: int, user: UserModel = Depends(get_current_user), service: DisciplinaService = Depends()):

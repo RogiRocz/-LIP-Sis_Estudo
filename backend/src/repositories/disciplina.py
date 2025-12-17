@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from ..models.disciplina import Disciplina as DisciplinaModel
 from ..schemas.disciplina import DisciplinaCreate, DisciplinaUpdate
+from typing import Tuple, List
 
 class DisciplinaRepository:
     def __init__(self, db: AsyncSession):
@@ -14,10 +15,18 @@ class DisciplinaRepository:
         await self.db.refresh(db_disciplina)
         return db_disciplina
 
-    async def get_disciplinas_by_user_id(self, usuario_id: int) -> list[DisciplinaModel]:
-        query = select(DisciplinaModel).where(DisciplinaModel.usuario_id == usuario_id)
+    async def get_paginated_disciplinas_by_user_id(self, usuario_id: int, skip: int, limit: int) -> Tuple[List[DisciplinaModel], int]:
+        """Busca disciplinas paginadas e a contagem total."""
+        # Query para contar o total de itens
+        count_query = select(func.count()).select_from(DisciplinaModel).where(DisciplinaModel.usuario_id == usuario_id)
+        total = await self.db.scalar(count_query)
+
+        # Query para buscar os itens da página
+        query = select(DisciplinaModel).where(DisciplinaModel.usuario_id == usuario_id).offset(skip).limit(limit)
         result = await self.db.execute(query)
-        return result.scalars().all()
+        disciplinas = result.scalars().all()
+        
+        return disciplinas, total
 
     async def get_disciplina_by_id(self, disciplina_id: int, usuario_id: int) -> DisciplinaModel | None:
         query = select(DisciplinaModel).where(DisciplinaModel.ID == disciplina_id, DisciplinaModel.usuario_id == usuario_id)

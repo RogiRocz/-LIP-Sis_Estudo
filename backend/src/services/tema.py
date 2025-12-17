@@ -5,7 +5,7 @@ from ..repositories.tema import TemaRepository
 from ..schemas.tema import TemaCreate, TemaUpdate
 from ..models.user import User as UserModel
 from ..models.tema import Tema as TemaModel
-from typing import List
+from typing import Dict, Any
 
 class TemaService:
     def __init__(self, db: AsyncSession = Depends(get_db)):
@@ -21,11 +21,27 @@ class TemaService:
         except Exception as e:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to create revisions: {e}")
 
-    async def get_temas_by_disciplina(self, disciplina_id: int, user_id: int) -> List[TemaModel]:
+    async def get_temas_by_disciplina(self, disciplina_id: int, user_id: int, page: int, size: int) -> Dict[str, Any]:
         db_disciplina = await self.repo.get_disciplina_by_id(disciplina_id, user_id)
         if not db_disciplina:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina not found")
-        return await self.repo.get_temas_by_disciplina_id(disciplina_id)
+        
+        if page < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Page must be greater than or equal to 1")
+        if size < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Size must be greater than or equal to 1")
+            
+        skip = (page - 1) * size
+        limit = size
+        
+        temas, total = await self.repo.get_paginated_temas_by_disciplina_id(disciplina_id, skip, limit)
+        
+        return {
+            "items": temas,
+            "total": total,
+            "page": page,
+            "size": size,
+        }
 
     async def get_tema(self, tema_id: int, user_id: int) -> TemaModel:
         db_tema = await self.repo.get_tema_by_id(tema_id, user_id)

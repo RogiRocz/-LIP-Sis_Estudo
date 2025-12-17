@@ -4,6 +4,7 @@ from ..database import get_db
 from ..repositories.disciplina import DisciplinaRepository
 from ..schemas.disciplina import DisciplinaCreate, DisciplinaUpdate
 from ..models.disciplina import Disciplina as DisciplinaModel
+from typing import Dict, Any
 
 class DisciplinaService:
     def __init__(self, db: AsyncSession = Depends(get_db)):
@@ -12,8 +13,23 @@ class DisciplinaService:
     async def create_disciplina(self, disciplina: DisciplinaCreate, usuario_id: int) -> DisciplinaModel:
         return await self.repo.create_disciplina(disciplina, usuario_id)
 
-    async def get_disciplinas(self, usuario_id: int) -> list[DisciplinaModel]:
-        return await self.repo.get_disciplinas_by_user_id(usuario_id)
+    async def get_disciplinas(self, usuario_id: int, page: int, size: int) -> Dict[str, Any]:
+        if page < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Page must be greater than or equal to 1")
+        if size < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Size must be greater than or equal to 1")
+        
+        skip = (page - 1) * size
+        limit = size
+        
+        disciplinas, total = await self.repo.get_paginated_disciplinas_by_user_id(usuario_id, skip, limit)
+        
+        return {
+            "items": disciplinas,
+            "total": total,
+            "page": page,
+            "size": size,
+        }
 
     async def get_disciplina(self, disciplina_id: int, usuario_id: int) -> DisciplinaModel:
         db_disciplina = await self.repo.get_disciplina_by_id(disciplina_id, usuario_id)
