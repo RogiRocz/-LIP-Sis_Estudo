@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Date
 from sqlalchemy.orm import relationship
 from ..database import Base
+from .base import TimestampMixin
 
-class Revisao(Base):
+class Revisao(Base, TimestampMixin):
     __tablename__ = "Revisao"
 
     ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
