@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
-from database import Base
+from ..database import Base
 
 class Tema(Base):
     __tablename__ = "Tema"

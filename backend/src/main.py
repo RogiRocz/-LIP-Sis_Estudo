@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from routers import auth, user, disciplina, tema, revisao
-from database import Base, engine
+from .routers import auth, user, disciplina, tema, revisao
+from .database import Base, engine
 from sqlalchemy import text
 from contextlib import asynccontextmanager
 
@@ -13,17 +13,17 @@ async def lifespan(app: FastAPI):
             RETURNS TRIGGER AS $$
             BEGIN
                 IF NEW.data_realizada IS NOT NULL THEN
-                    NEW.status := '''REALIZADA''';
+                    NEW.status := 'REALIZADA';
                 ELSIF NEW.data_prevista < CURRENT_DATE THEN
-                    NEW.status := '''ATRASADA''';
+                    NEW.status := 'ATRASADA';
                 ELSE
-                    NEW.status := '''PENDENTE''';
+                    NEW.status := 'PENDENTE';
                 END IF;
                 RETURN NEW;
             END;
             $$ LANGUAGE plpgsql;
         """))
-        await conn.execute(text('''DROP TRIGGER IF EXISTS trg_update_revisao_status ON "Revisao"'''))
+        await conn.execute(text('DROP TRIGGER IF EXISTS trg_update_revisao_status ON "Revisao"'))
         await conn.execute(text("""
             CREATE TRIGGER trg_update_revisao_status
             BEFORE INSERT OR UPDATE ON "Revisao"

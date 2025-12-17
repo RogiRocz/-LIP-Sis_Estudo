@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
-from repositories.user import UserRepository
-from schemas.user import UserCreate, UserUpdate, UserDelete
-from models.user import User as UserModel
-from security import get_password_hash, verify_password
+from ..database import get_db
+from ..repositories.user import UserRepository
+from ..schemas.user import UserCreate, UserUpdate, UserDelete
+from ..models.user import User as UserModel
+from ..security import get_password_hash, verify_password
 
 class UserService:
     def __init__(self, db: AsyncSession = Depends(get_db)):
@@ -30,7 +30,7 @@ class UserService:
 
         if "email" in update_data:
             existing_user = await self.repo.get_user_by_email(update_data["email"])
-            if existing_user and existing_user.id != current_user.id:
+            if existing_user and existing_user.ID != current_user.ID:
                 raise HTTPException(status_code=400, detail="Email already registered")
 
         if "nova_senha" in update_data:

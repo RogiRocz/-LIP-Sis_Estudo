@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models.revisao import Revisao as RevisaoModel
-from models.tema import Tema as TemaModel
-from models.disciplina import Disciplina as DisciplinaModel
+from ..models.revisao import Revisao as RevisaoModel
+from ..models.tema import Tema as TemaModel
+from ..models.disciplina import Disciplina as DisciplinaModel
 from typing import List
 
 class RevisaoRepository:
@@ -14,7 +14,7 @@ class RevisaoRepository:
             select(RevisaoModel)
             .join(TemaModel)
             .join(DisciplinaModel)
-            .where(RevisaoModel.id == revisao_id, DisciplinaModel.user_id == user_id)
+            .where(RevisaoModel.ID == revisao_id, DisciplinaModel.usuario_id == user_id)
         )
         result = await self.db.execute(query)
         return result.scalars().first()
@@ -24,7 +24,7 @@ class RevisaoRepository:
             select(RevisaoModel)
             .join(TemaModel)
             .join(DisciplinaModel)
-            .where(DisciplinaModel.user_id == user_id)
+            .where(DisciplinaModel.usuario_id == user_id)
         )
         result = await self.db.execute(query)
         return result.scalars().all()

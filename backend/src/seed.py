@@ -3,19 +3,13 @@ import asyncio
 from datetime import datetime, date, timedelta
 from sqlalchemy import text
 
-# Configuration to allow the script to import application modules
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from database import SessionLocal, engine, Base
-from models.user import User
-from models.disciplina import Disciplina
-from models.tema import Tema
-from models.revisao import Revisao
-from models.cronograma import Cronograma
-from security import get_password_hash
-from core.config import settings
+from .database import SessionLocal, engine, Base
+from .models.user import User
+from .models.disciplina import Disciplina
+from .models.tema import Tema
+from .models.revisao import Revisao
+from .security import get_password_hash
+from .core.config import settings
 
 async def seed_data():
     # Reset the database
@@ -32,7 +26,7 @@ async def seed_data():
             nome="Usuário de Teste",
             email="teste@exemplo.com",
             senha=hashed_password,
-            tema=settings.DEFAULT_THEME,
+            ui_theme=settings.DEFAULT_THEME,
             intervalo_revisoes=settings.DEFAULT_REVISION_INTERVAL
         )
         db.add(user)

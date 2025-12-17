@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, date, time
+from datetime import datetime, date
 
 class RevisaoBase(BaseModel):
     data_prevista: Optional[date] = None
@@ -9,14 +9,6 @@ class RevisaoBase(BaseModel):
     status: str = 'PENDENTE'
     tipo_revisao: Optional[str] = None
     descricao: Optional[str] = None
-
-class StudySessionCreate(BaseModel):
-    tema_id: int
-    data: Optional[date] = None
-    hora: Optional[time] = None
-    tempo_minutos: int
-    descricao: Optional[str] = None
-
 
 class RevisaoUpdate(BaseModel):
     data_prevista: Optional[date] = None

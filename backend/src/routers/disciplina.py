@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status, Response
-from schemas.disciplina import Disciplina, DisciplinaCreate, DisciplinaUpdate
-from models.user import User as UserModel
-from security import get_current_user
-from services.disciplina import DisciplinaService
+from ..schemas.disciplina import Disciplina, DisciplinaCreate, DisciplinaUpdate
+from ..models.user import User as UserModel
+from ..security import get_current_user
+from ..services.disciplina import DisciplinaService
 from typing import List
 
 router = APIRouter(prefix="/disciplinas", tags=["disciplinas"])

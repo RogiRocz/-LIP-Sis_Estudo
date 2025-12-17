@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models.disciplina import Disciplina as DisciplinaModel
-from schemas.disciplina import DisciplinaCreate, DisciplinaUpdate
+from ..models.disciplina import Disciplina as DisciplinaModel
+from ..schemas.disciplina import DisciplinaCreate, DisciplinaUpdate
 
 class DisciplinaRepository:
     def __init__(self, db: AsyncSession):

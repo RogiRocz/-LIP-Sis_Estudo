@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status, Response
-from schemas.user import User, UserUpdate, UserDelete
-from models.user import User as UserModel
-from security import get_current_user
-from services.user import UserService
+from ..schemas.user import User, UserUpdate, UserDelete
+from ..models.user import User as UserModel
+from ..security import get_current_user
+from ..services.user import UserService
 
 router = APIRouter(prefix="/usuario", tags=["usuario"])
 

@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
-from repositories.disciplina import DisciplinaRepository
-from schemas.disciplina import DisciplinaCreate, DisciplinaUpdate
-from models.disciplina import Disciplina as DisciplinaModel
+from ..database import get_db
+from ..repositories.disciplina import DisciplinaRepository
+from ..schemas.disciplina import DisciplinaCreate, DisciplinaUpdate
+from ..models.disciplina import Disciplina as DisciplinaModel
 
 class DisciplinaService:
     def __init__(self, db: AsyncSession = Depends(get_db)):

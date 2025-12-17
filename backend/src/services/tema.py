@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
-from repositories.tema import TemaRepository
-from schemas.tema import TemaCreate, TemaUpdate
-from models.user import User as UserModel
-from models.tema import Tema as TemaModel
+from ..database import get_db
+from ..repositories.tema import TemaRepository
+from ..schemas.tema import TemaCreate, TemaUpdate
+from ..models.user import User as UserModel
+from ..models.tema import Tema as TemaModel
 from typing import List
 
 class TemaService:

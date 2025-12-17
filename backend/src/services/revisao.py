@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
-from repositories.revisao import RevisaoRepository
-from schemas.revisao import RevisaoUpdate
-from models.revisao import Revisao as RevisaoModel
+from ..database import get_db
+from ..repositories.revisao import RevisaoRepository
+from ..schemas.revisao import RevisaoUpdate
+from ..models.revisao import Revisao as RevisaoModel
 from typing import List
 from datetime import datetime, date
 

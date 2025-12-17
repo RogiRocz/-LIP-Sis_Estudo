@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status, Response
-from schemas.tema import Tema, TemaCreate, TemaUpdate
-from models.user import User as UserModel
-from security import get_current_user
-from services.tema import TemaService
+from ..schemas.tema import Tema, TemaCreate, TemaUpdate
+from ..models.user import User as UserModel
+from ..security import get_current_user
+from ..services.tema import TemaService
 from typing import List
 
 # Router for nested endpoints under /disciplinas/{disciplina_id}/temas

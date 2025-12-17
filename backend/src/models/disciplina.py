@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
-from database import Base
+from ..database import Base
 
 class Disciplina(Base):
     __tablename__ = "Disciplina"
@@ -14,4 +14,3 @@ class Disciplina(Base):
 
     usuario = relationship("User", back_populates="disciplinas")
     temas = relationship("Tema", back_populates="disciplina")
-    cronogramas = relationship("Cronograma", back_populates="disciplina")

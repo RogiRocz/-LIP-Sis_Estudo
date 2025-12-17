@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models.tema import Tema as TemaModel
-from models.disciplina import Disciplina as DisciplinaModel
-from models.revisao import Revisao as RevisaoModel
-from schemas.tema import TemaCreate, TemaUpdate
+from ..models.tema import Tema as TemaModel
+from ..models.disciplina import Disciplina as DisciplinaModel
+from ..models.revisao import Revisao as RevisaoModel
+from ..schemas.tema import TemaCreate, TemaUpdate
 from typing import List
 from datetime import date, timedelta
 
@@ -27,7 +27,6 @@ class TemaRepository:
                 revisao = RevisaoModel(
                     tema_id=db_tema.ID,
                     data_prevista=date.today() + timedelta(days=day),
-                    tipo_revisao=f"D+{day}"
                 )
                 self.db.add(revisao)
             await self.db.commit()
