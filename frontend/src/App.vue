@@ -3,9 +3,12 @@ import AppBar from './components/AppBar.vue'
 import { tabsNavigation } from './utils/tabsNavigation'
 import { useAppBarStore } from './stores/useAppBarStore'
 import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 
 const appBarStore = useAppBarStore()
 const { drawer } = storeToRefs(appBarStore)
+
+const route = useRoute()
 </script>
 
 <template>
@@ -24,8 +27,8 @@ const { drawer } = storeToRefs(appBarStore)
 				:to="{ name: tab.routeName }"
 			></v-list-item>
 		</v-navigation-drawer>
-		<AppBar />
-		<v-main>
+		<AppBar v-if="route.name !== 'cadastro'" />
+		<v-main :class="{ 'v-main-cadastro': route.name === 'cadastro' }">
 			<router-view v-slot="{ Component }">
 				<v-slide-x-transition mode="out-in">
 					<component :is="Component" />
@@ -38,6 +41,11 @@ const { drawer } = storeToRefs(appBarStore)
 <style scoped>
 .v-main {
 	margin: 1vh 1vw;
+}
+
+.v-main-cadastro {
+	margin: 0;
+	padding: 0;
 }
 
 .v-list-item-title {
