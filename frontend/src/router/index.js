@@ -7,9 +7,18 @@ const routes = [
 		path: '/',
 		name: 'home',
 		component: import('@/views/HomeView.vue'),
-		redirect: { name: 'disciplina' },
+		redirect: { name: 'cadastro' },
 	},
-	{ path: '/login', name: 'login', component: import('@/views/LoginView.vue') },
+	{
+		path: '/login',
+		name: 'login',
+		component: import('@/views/LoginView.vue'),
+	},
+	{
+		path: '/cadastro',
+		name: 'cadastro',
+		component: import('@/views/CadastroView.vue'),
+	},
 	{
 		path: '/disciplina',
 		name: 'disciplina',
