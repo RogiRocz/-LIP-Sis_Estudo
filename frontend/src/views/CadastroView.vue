@@ -40,6 +40,9 @@ const email = ref('')
 const senha = ref('')
 const confirmarSenha = ref('')
 
+const showPassword1 = ref(false)
+const showPassword2 = ref(false)
+
 const inputs: AuthInput[] = [
 	{
 		name: 'nome',
@@ -64,6 +67,7 @@ const inputs: AuthInput[] = [
 		model: senha,
 		icon: 'password_2',
 		rules: [required, validPassword],
+		showPassword: showPassword1,
 	},
 	{
 		name: 'confirmar senha',
@@ -72,6 +76,7 @@ const inputs: AuthInput[] = [
 		model: confirmarSenha,
 		icon: 'password_2',
 		rules: [required, passwordMatch(senha)],
+		showPassword: showPassword2,
 	},
 ]
 
