@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import AppBar from './components/AppBar.vue'
-import { tabsNavigation } from './utils/tabsNavigation'
-import { useAppBarStore } from './stores/useAppBarStore'
-import { useUserStore } from './stores/useUserStore'
+import AppBar from '@/components/AppBar.vue'
+import { tabsNavigation } from '@/utils/tabsNavigation'
+import { useAppBarStore } from '@/stores/useAppBarStore'
+import { useUserStore } from '@/stores/useUserStore'
+import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { watch, onMounted } from 'vue'
@@ -11,8 +12,11 @@ const appBarStore = useAppBarStore()
 const { drawer } = storeToRefs(appBarStore)
 
 const userStore = useUserStore()
-const { drawerAuth } = storeToRefs(userStore)
-const { fetchUser, isAuthenticated } = userStore
+const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
+const { fetchUser } = userStore
+
+const snackbarStore = useSnackbarStore()
+const { messages } = storeToRefs(snackbarStore)
 
 const route = useRoute()
 
@@ -56,6 +60,12 @@ onMounted(() => {
 				</v-slide-x-transition>
 			</router-view>
 		</v-main>
+
+		<v-snackbar-queue
+			closeable
+			v-model="messages"
+			timeout="3000"
+		></v-snackbar-queue>
 	</v-app>
 </template>
 
