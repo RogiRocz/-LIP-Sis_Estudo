@@ -15,6 +15,10 @@
 					<div v-for="(input, i) in inputs" :key="i">
 						<span>{{ capitalize(input.name) }}</span>
 						<v-text-field
+							v-if="input.type != 'password'"
+							clearable
+							clear-icon="close"
+							persistent-clear
 							:glow="true"
 							variant="filled"
 							class="input"
@@ -23,6 +27,27 @@
 							:placeholder="input.placeholder"
 							v-model="input.model.value"
 							:rules="input.rules"
+						>
+						</v-text-field>
+						<v-text-field
+							v-else
+							clearable
+							clear-icon="close"
+							persistent-clear
+							:append-inner-icon="
+								input.showPassword.value ? 'visibility' : 'visibility_off'
+							"
+							:glow="true"
+							variant="filled"
+							class="input"
+							:type="input.showPassword.value ? 'text' : 'password'"
+							:prepend-inner-icon="input.icon"
+							:placeholder="input.placeholder"
+							v-model="input.model.value"
+							:rules="input.rules"
+							@click:append-inner="
+								input.showPassword.value = !input.showPassword.value
+							"
 						>
 						</v-text-field>
 					</div>
