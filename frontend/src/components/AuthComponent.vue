@@ -22,16 +22,13 @@
 							:prepend-inner-icon="input.icon"
 							:placeholder="input.placeholder"
 							v-model="input.model.value"
+							:rules="input.rules"
 						>
 						</v-text-field>
 					</div>
-					<v-btn type="submit">Criar conta</v-btn>
+					<slot name="submit-form"></slot>
 				</v-form>
-				<div align="center">
-					<p>
-						Já tem uma conta? <router-link to="/login">Faça login</router-link>
-					</p>
-				</div>
+				<slot name="actions"></slot>
 			</v-card>
 		</v-row>
 	</v-container>
@@ -53,10 +50,9 @@ function capitalize(str: string) {
 
 <style scoped>
 .v-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
+	display: grid;
+	place-items: center;
+	height: 100%;
 	max-width: 100vw;
 	background: linear-gradient(
 		150deg,
@@ -70,6 +66,7 @@ function capitalize(str: string) {
 	flex-direction: column;
 	align-items: center;
 	color: white;
+	margin: 5vh 0;
 }
 
 .logo + .v-icon {
@@ -115,7 +112,7 @@ h4 {
 	font-weight: bold;
 }
 
-.v-btn[type='submit'] {
+:deep(.v-btn[type='submit']) {
 	display: flex;
 	margin: 0 auto;
 	margin-top: 10px;
@@ -128,7 +125,7 @@ h4 {
 	) !important;
 }
 
-p {
+:deep(p) {
 	margin: 20px 0;
 }
 </style>
