@@ -2,11 +2,28 @@ import { ref } from 'vue'
 
 export const tabsNavigation = ref([
 	{
+		name: 'Home',
+		iconName: 'home',
+		componentName: 'HomeComponent',
+		routeName: 'home',
+		description: 'Página inicial do aplicativo',
+		isVisible: false,
+	},
+	{
+		name: 'Login',
+		iconName: 'login',
+		componentName: 'LoginComponent',
+		routeName: 'login',
+		description: 'Acesse sua conta',
+		isVisible: false,
+	},
+	{
 		name: 'Disciplinas',
 		iconName: 'book',
 		componentName: 'DisciplinasComponent',
 		routeName: 'disciplina',
 		description: 'Organize seus estudos por disciplinas e temas',
+		isVisible: true,
 	},
 	{
 		name: 'Cronograma',
@@ -14,6 +31,7 @@ export const tabsNavigation = ref([
 		componentName: 'CronogramaComponent',
 		routeName: 'calendario',
 		description: 'Acompanhe suas revisões agendadas e sessões de estudo',
+		isVisible: true,
 	},
 	{
 		name: 'Relatórios',
@@ -21,6 +39,7 @@ export const tabsNavigation = ref([
 		componentName: 'RelatoriosComponent',
 		routeName: 'relatorios',
 		description: 'Acompanhe seu desempenho e evolução',
+		isVisible: true,
 	},
 	{
 		name: 'Configurações',
@@ -28,5 +47,6 @@ export const tabsNavigation = ref([
 		componentName: 'ConfiguracoesComponent',
 		routeName: 'configuracoes',
 		description: 'Ajustes e preferências do aplicativo.',
+		isVisible: false,
 	},
 ])
