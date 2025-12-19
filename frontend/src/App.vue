@@ -5,8 +5,8 @@ import { useAppBarStore } from '@/stores/useAppBarStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
-import { watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { watch, onMounted, ref } from 'vue'
 
 const appBarStore = useAppBarStore()
 const { drawer } = storeToRefs(appBarStore)
@@ -19,6 +19,8 @@ const snackbarStore = useSnackbarStore()
 const { messages } = storeToRefs(snackbarStore)
 
 const route = useRoute()
+const router = useRouter()
+const isRouterReady = ref(false)
 
 watch(route, (newVal) => {
 	if (newVal && (newVal.name === 'cadastro' || newVal.name === 'login')) {
@@ -29,7 +31,10 @@ watch(route, (newVal) => {
 })
 
 onMounted(() => {
-	if (isAuthenticated) {
+	router.isReady().then(() => {
+		isRouterReady.value = true
+	})
+	if (isAuthenticated.value) {
 		fetchUser()
 	}
 })
@@ -52,9 +57,9 @@ onMounted(() => {
 				></v-list-item>
 			</template>
 		</v-navigation-drawer>
-		<AppBar v-if="!drawerAuth" />
+		<AppBar v-if="isRouterReady && !drawerAuth" />
 		<v-main :class="{ 'v-main-cadastro': drawerAuth }">
-			<router-view v-slot="{ Component }">
+			<router-view v-if="isRouterReady" v-slot="{ Component }">
 				<v-slide-x-transition mode="out-in">
 					<component :is="Component" />
 				</v-slide-x-transition>
