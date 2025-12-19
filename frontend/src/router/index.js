@@ -39,6 +39,11 @@ const routes = [
 		name: 'configuracoes',
 		component: () => import('@/views/ConfiguracoesView.vue'),
 	},
+	{
+		path: '/:pathMatch(.*)*',
+		name: 'not-found',
+		component: () => import('@/views/NotFoundView.vue')
+	},
 ]
 
 const router = createRouter({
@@ -61,5 +66,6 @@ router.beforeEach((to, from, next) => {
 		next()
 	}
 })
+
 
 export default router
