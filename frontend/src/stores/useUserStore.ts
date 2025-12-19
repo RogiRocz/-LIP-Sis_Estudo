@@ -2,6 +2,7 @@ import { Usuario } from '@/utils/apiTypes'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { getProfile } from '@/api/user'
+import router from '@/router'
 
 export const useUserStore = defineStore('userStore', () => {
 	// State
@@ -41,6 +42,7 @@ export const useUserStore = defineStore('userStore', () => {
 		localStorage.removeItem('authToken')
 		token.value = null
 		user.value = null
+		router.replace({name: 'login'})
 	}
 
 	const fetchUser = async () => {
