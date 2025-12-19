@@ -20,29 +20,28 @@
 					@click="appBarStore.toggleDrawer"
 				></v-app-bar-nav-icon>
 			</div>
-			<div v-else>
+			<div class="drawer" v-else>
 				<v-tabs :v-model="route.name">
 					<template v-for="(tab, i) in tabsNavigation" :key="i">
-						<v-tab
-							v-if="tab.isVisible"
-							:to="{ name: tab.routeName }"
-						>
+						<v-tab v-if="tab.isVisible" :to="{ name: tab.routeName }">
 							<v-icon :icon="tab.iconName" class="mr-2"></v-icon>
 							{{ tab.name }}
 						</v-tab>
 					</template>
 				</v-tabs>
+				<v-divider vertical class="border-opacity-100 mx-2 mr-2"></v-divider>
+				<UserSettings />
 			</div>
 		</template>
 	</v-app-bar>
 </template>
 
 <script setup lang="ts">
+import UserSettings from '@/components/UserSettings.vue'
 import { useAppBarStore } from '@/stores/useAppBarStore'
 import { tabsNavigation } from '@/utils/tabsNavigation'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
-
 
 const appBarStore = useAppBarStore()
 const { nameDisplay } = storeToRefs(appBarStore)
@@ -71,5 +70,18 @@ const route = useRoute()
 
 .app-bar-titulo > * {
 	margin: auto 1vw;
+}
+
+.drawer {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	
+}
+
+.v-divider {
+	height: 40px;
+	margin: auto 0;
 }
 </style>
