@@ -15,14 +15,14 @@ class AuthService:
         if user_data.senha != user_data.confirmar_senha:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Passwords do not match"
+                detail="As senhas não conferem"
             )
 
         existing_user = await self.user_repo.get_user_by_email(user_data.email)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Email já registrado"
             )
 
         hashed_password = get_password_hash(user_data.senha)
@@ -41,7 +41,7 @@ class AuthService:
         if not db_user or not verify_password(user_data.senha, db_user.senha):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password",
+                detail="Email ou senha incorretos",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
