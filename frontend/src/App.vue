@@ -2,10 +2,33 @@
 import AppBar from './components/AppBar.vue'
 import { tabsNavigation } from './utils/tabsNavigation'
 import { useAppBarStore } from './stores/useAppBarStore'
+import { useUserStore } from './stores/useUserStore'
 import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
+import { watch, onMounted } from 'vue'
 
 const appBarStore = useAppBarStore()
 const { drawer } = storeToRefs(appBarStore)
+
+const userStore = useUserStore()
+const { drawerAuth } = storeToRefs(userStore)
+const { fetchUser, isAuthenticated } = userStore
+
+const route = useRoute()
+
+watch(route, (newVal) => {
+	if (newVal && (newVal.name === 'cadastro' || newVal.name === 'login')) {
+		drawerAuth.value = true
+	} else {
+		drawerAuth.value = false
+	}
+})
+
+onMounted(() => {
+	if (isAuthenticated) {
+		fetchUser()
+	}
+})
 </script>
 
 <template>
@@ -16,16 +39,17 @@ const { drawer } = storeToRefs(appBarStore)
 				StudyFlow
 			</v-list-item-title>
 			<v-divider></v-divider>
-			<v-list-item
-				v-for="(tab, i) in tabsNavigation"
-				:key="i"
-				:prepend-icon="tab.iconName"
-				:title="tab.name"
-				:to="{ name: tab.routeName }"
-			></v-list-item>
+			<template v-for="(tab, i) in tabsNavigation" :key="i">
+				<v-list-item
+					v-if="tab.isVisible"
+					:prepend-icon="tab.iconName"
+					:title="tab.name"
+					:to="{ name: tab.routeName }"
+				></v-list-item>
+			</template>
 		</v-navigation-drawer>
-		<AppBar />
-		<v-main>
+		<AppBar v-if="!drawerAuth" />
+		<v-main :class="{ 'v-main-cadastro': drawerAuth }">
 			<router-view v-slot="{ Component }">
 				<v-slide-x-transition mode="out-in">
 					<component :is="Component" />
@@ -38,6 +62,11 @@ const { drawer } = storeToRefs(appBarStore)
 <style scoped>
 .v-main {
 	margin: 1vh 1vw;
+}
+
+.v-main-cadastro {
+	margin: 0;
+	padding: 0;
 }
 
 .v-list-item-title {

@@ -22,14 +22,15 @@
 			</div>
 			<div v-else>
 				<v-tabs :v-model="route.name">
-					<v-tab
-						v-for="(tab, i) in tabsNavigation"
-						:key="i"
-						:to="{ name: tab.routeName }"
-					>
-						<v-icon :icon="tab.iconName" class="mr-2"></v-icon>
-						{{ tab.name }}
-					</v-tab>
+					<template v-for="(tab, i) in tabsNavigation" :key="i">
+						<v-tab
+							v-if="tab.isVisible"
+							:to="{ name: tab.routeName }"
+						>
+							<v-icon :icon="tab.iconName" class="mr-2"></v-icon>
+							{{ tab.name }}
+						</v-tab>
+					</template>
 				</v-tabs>
 			</div>
 		</template>

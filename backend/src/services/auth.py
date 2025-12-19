@@ -32,9 +32,9 @@ class AuthService:
         db_user.intervalo_revisoes = settings.DEFAULT_REVISION_INTERVAL
         await self.user_repo.update_user(db_user)
 
-        access_token = create_access_token(data={"sub": db_user.email})
+        token = create_access_token(data={"sub": db_user.email})
         user_schema = User.model_validate(db_user)
-        return Token(access_token=access_token, token_type="bearer", user=user_schema)
+        return Token(token=token, token_type="bearer", user=user_schema)
 
     async def login(self, user_data: UserLogin) -> Token:
         db_user = await self.user_repo.get_user_by_email(user_data.email)
@@ -45,6 +45,6 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        access_token = create_access_token(data={"sub": db_user.email})
+        token = create_access_token(data={"sub": db_user.email})
         user_schema = User.model_validate(db_user)
-        return Token(access_token=access_token, token_type="bearer", user=user_schema)
+        return Token(token=token, token_type="bearer", user=user_schema)

@@ -20,6 +20,7 @@ const StudyFlowTheme = {
 				surface: '1E1E1E',
 				primary: '17a2b8',
 				secondary: '667eea',
+				card: '2d3748',
 				error: 'EF4444',
 				info: '17a2b8',
 				success: '10B981',
@@ -35,10 +36,11 @@ const StudyFlowTheme = {
 		light: {
 			dark: false,
 			colors: {
-				background: 'ffffff',
+				background: 'fff',
 				surface: '1E1E1E',
 				primary: '17a2b8',
 				secondary: '667eea',
+				card: 'fff',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
