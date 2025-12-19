@@ -55,6 +55,8 @@ router.beforeEach((to, from, next) => {
 
 	if (authRequired && !isAuthenticated.value) {
 		next({ name: 'login' })
+	} else if (!authRequired && isAuthenticated.value) {
+		next({ name: 'home' })
 	} else {
 		next()
 	}
