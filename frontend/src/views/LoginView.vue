@@ -22,6 +22,7 @@
 <script setup lang="ts">
 import { login } from '@/api/auth'
 import AuthComponent from '@/components/AuthComponent.vue'
+import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { AuthInput } from '@/utils/authInputs'
 import { required, validEmail, validPassword } from '@/utils/rulesAuth'
@@ -51,10 +52,14 @@ const inputs: AuthInput[] = [
 	},
 ]
 
+const router = useRouter()
+
 const userStore = useUserStore()
 const { loading } = storeToRefs(userStore)
 const { setToken, setUser } = userStore
-const router = useRouter()
+
+const snackbarStore = useSnackbarStore()
+const { addMessage } = snackbarStore
 
 async function handleSubmit() {
 	try {
@@ -72,6 +77,7 @@ async function handleSubmit() {
 		}
 	} catch (error) {
 		console.error('Falha ao logar:', error)
+		addMessage({ text: error.response.data.detail, color: 'error' })
 	} finally {
 		loading.value = false
 	}

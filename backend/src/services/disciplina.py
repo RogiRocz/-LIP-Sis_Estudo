@@ -15,9 +15,9 @@ class DisciplinaService:
 
     async def get_disciplinas(self, usuario_id: int, page: int, size: int) -> Dict[str, Any]:
         if page < 1:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Page must be greater than or equal to 1")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A pagína tem que ser maior ou igual a 1")
         if size < 1:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Size must be greater than or equal to 1")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O tamanho tem que ser maior ou igual a 1")
         
         skip = (page - 1) * size
         limit = size
@@ -34,17 +34,17 @@ class DisciplinaService:
     async def get_disciplina(self, disciplina_id: int, usuario_id: int) -> DisciplinaModel:
         db_disciplina = await self.repo.get_disciplina_by_id(disciplina_id, usuario_id)
         if not db_disciplina:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina não encontrada")
         return db_disciplina
 
     async def update_disciplina(self, disciplina_id: int, disciplina: DisciplinaUpdate, usuario_id: int) -> DisciplinaModel:
         db_disciplina = await self.repo.update_disciplina(disciplina_id, disciplina, usuario_id)
         if not db_disciplina:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina não encontrada")
         return db_disciplina
 
     async def delete_disciplina(self, disciplina_id: int, usuario_id: int):
         success = await self.repo.delete_disciplina(disciplina_id, usuario_id)
         if not success:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina não encontrada")
         return

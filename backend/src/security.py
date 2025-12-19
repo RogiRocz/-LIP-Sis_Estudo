@@ -34,7 +34,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_scheme), db: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=401,
-        detail="Could not validate credentials",
+        detail="Credenciais inválidas",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:

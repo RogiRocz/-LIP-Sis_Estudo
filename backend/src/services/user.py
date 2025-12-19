@@ -14,13 +14,13 @@ class UserService:
         if user.senha != user.confirmar_senha:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Passwords do not match"
+                detail="As senhas não conferem"
             )
         existing_user = await self.repo.get_user_by_email(user.email)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Email já registrado"
             )
         hashed_password = get_password_hash(user.senha)
         return await self.repo.create_user(user, hashed_password)
@@ -31,11 +31,11 @@ class UserService:
         if "email" in update_data:
             existing_user = await self.repo.get_user_by_email(update_data["email"])
             if existing_user and existing_user.ID != current_user.ID:
-                raise HTTPException(status_code=400, detail="Email already registered")
+                raise HTTPException(status_code=400, detail="Email já registrado")
 
         if "nova_senha" in update_data:
             if not user_update.senha_atual or not verify_password(user_update.senha_atual, current_user.senha):
-                raise HTTPException(status_code=400, detail="Incorrect current password")
+                raise HTTPException(status_code=400, detail="Senha atual incorreta")
             update_data["senha"] = get_password_hash(update_data["nova_senha"])
             del update_data["nova_senha"]
             if "senha_atual" in update_data:
@@ -48,6 +48,6 @@ class UserService:
 
     async def delete_user_account(self, user_delete: UserDelete, current_user: UserModel):
         if not verify_password(user_delete.senha_confirmacao, current_user.senha):
-            raise HTTPException(status_code=400, detail="Incorrect password")
+            raise HTTPException(status_code=400, detail="Senha incorreta")
 
         await self.repo.delete_user(current_user)

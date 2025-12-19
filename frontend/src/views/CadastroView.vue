@@ -23,6 +23,7 @@
 import AuthComponent from '@/components/AuthComponent.vue'
 import { AuthInput } from '@/utils/authInputs'
 import { useUserStore } from '@/stores/useUserStore'
+import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
@@ -75,9 +76,13 @@ const inputs: AuthInput[] = [
 ]
 
 const router = useRouter()
+
 const userStore = useUserStore()
 const { loading } = storeToRefs(userStore)
 const { setToken, setUser } = userStore
+
+const snackbarStore = useSnackbarStore()
+const { addMessage } = snackbarStore
 
 async function handleSubmit() {
 	try {
@@ -97,6 +102,7 @@ async function handleSubmit() {
 		}
 	} catch (error) {
 		console.error('Falha ao criar usuário:', error)
+		addMessage({ text: error.response.data.detail, color: 'error' })
 	} finally {
 		loading.value = false
 	}
