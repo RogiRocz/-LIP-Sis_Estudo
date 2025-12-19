@@ -6,4 +6,5 @@ export interface AuthInput {
 	placeholder: string;
 	model: Ref<string>;
 	icon: string;
+	rules: ((value: string) => true | string)[];
 }
