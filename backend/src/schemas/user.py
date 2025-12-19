@@ -22,11 +22,8 @@ class UserUpdate(BaseModel):
     intervalo_revisoes: Optional[str] = None
 
 class User(UserBase):
-    ID: int
     ui_theme: str
-    intervalo_revisoes: str
-    criado_em: datetime
-    atualizado_em: datetime
+    intervalo_revisoes: str    
 
     class Config:
         from_attributes = True
