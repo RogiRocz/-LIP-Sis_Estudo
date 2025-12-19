@@ -39,6 +39,11 @@ const routes = [
 		name: 'configuracoes',
 		component: () => import('@/views/ConfiguracoesView.vue'),
 	},
+	{
+		path: '/:pathMatch(.*)*',
+		name: 'not-found',
+		component: () => import('@/views/NotFoundView.vue')
+	},
 ]
 
 const router = createRouter({
@@ -55,9 +60,12 @@ router.beforeEach((to, from, next) => {
 
 	if (authRequired && !isAuthenticated.value) {
 		next({ name: 'login' })
+	} else if (!authRequired && isAuthenticated.value) {
+		next({ name: 'home' })
 	} else {
 		next()
 	}
 })
+
 
 export default router

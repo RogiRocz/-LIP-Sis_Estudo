@@ -7,4 +7,5 @@ export interface AuthInput {
 	model: Ref<string>;
 	icon: string;
 	rules: ((value: string) => true | string)[];
+	showPassword?: Ref<boolean>;
 }

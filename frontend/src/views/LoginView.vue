@@ -33,6 +33,8 @@ import { useRouter } from 'vuetify/lib/composables/router.mjs'
 const email = ref('')
 const senha = ref('')
 
+const showPassword = ref(false)
+
 const inputs: AuthInput[] = [
 	{
 		name: 'email',
@@ -49,6 +51,7 @@ const inputs: AuthInput[] = [
 		model: senha,
 		icon: 'password_2',
 		rules: [required, validPassword],
+		showPassword,
 	},
 ]
 
