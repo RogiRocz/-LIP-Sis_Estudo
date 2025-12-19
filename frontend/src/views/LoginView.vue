@@ -1,17 +1,81 @@
 <template>
-	<PageHeader :pageTitle="name" :pageDescription="description" />
+	<AuthComponent
+		title="Bem vindo de volta!"
+		subtitle="Entre com suas credenciais para continuar"
+		:inputs="inputs"
+	>
+		<template #submit-form>
+			<v-btn type="submit" :loading="loading" @click.prevent="handleSubmit">
+				Entrar
+			</v-btn>
+		</template>
+
+		<template #actions>
+			<p align="center">
+				Não tem uma conta?
+				<router-link :to="{ name: 'cadastro' }">Criar conta</router-link>
+			</p>
+		</template>
+	</AuthComponent>
 </template>
 
 <script setup lang="ts">
-import PageHeader from '@/components/PageHeader.vue'
-import { tabsNavigation } from '@/utils/tabsNavigation'
-import { computed } from 'vue'
+import { login } from '@/api/auth'
+import AuthComponent from '@/components/AuthComponent.vue'
+import { useUserStore } from '@/stores/useUserStore'
+import { AuthInput } from '@/utils/authInputs'
+import { required, validEmail, validPassword } from '@/utils/rulesAuth'
+import { storeToRefs } from 'pinia'
+import { ref } from 'vue'
+import { useRouter } from 'vuetify/lib/composables/router.mjs'
 
-const currentView = computed(() =>
-	tabsNavigation.value.find((tab) => tab.routeName === 'login'),
-)
-const name = computed(() => currentView.value?.name || '')
-const description = computed(() => currentView.value?.description || '')
+const email = ref('')
+const senha = ref('')
+
+const inputs: AuthInput[] = [
+	{
+		name: 'email',
+		type: 'email',
+		placeholder: 'E-mail',
+		model: email,
+		icon: 'mail',
+		rules: [required, validEmail],
+	},
+	{
+		name: 'senha',
+		type: 'password',
+		placeholder: 'Senha',
+		model: senha,
+		icon: 'password_2',
+		rules: [required, validPassword],
+	},
+]
+
+const userStore = useUserStore()
+const { loading } = storeToRefs(userStore)
+const { setToken, setUser } = userStore
+const router = useRouter()
+
+async function handleSubmit() {
+	try {
+		loading.value = true
+		const response = await login({
+			email: email.value,
+			senha: senha.value,
+		})
+
+		if (response && response.token) {
+			setToken(response.token)
+			setUser(response.user)
+
+			router.push({ name: 'home' })
+		}
+	} catch (error) {
+		console.error('Falha ao logar:', error)
+	} finally {
+		loading.value = false
+	}
+}
 </script>
 
 <style scoped>
