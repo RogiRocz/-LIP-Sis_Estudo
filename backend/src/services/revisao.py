@@ -43,8 +43,8 @@ class RevisaoService:
         db_revisao.status = "REALIZADA"
         db_revisao.data_realizada = update_data.get("data_realizada", datetime.now())
         
-        if "tempo_minutos" in update_data:
-            db_revisao.tempo_minutos = update_data["tempo_minutos"]
+        if "tempo_dedicado" in update_data:
+            db_revisao.tempo_dedicado = update_data["tempo_dedicado"]
 
         if "descricao" in update_data:
             db_revisao.descricao = update_data["descricao"]

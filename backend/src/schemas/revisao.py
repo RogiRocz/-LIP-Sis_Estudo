@@ -5,15 +5,14 @@ from datetime import datetime, date
 class RevisaoBase(BaseModel):
     data_prevista: Optional[date] = None
     data_realizada: Optional[datetime] = None
-    tempo_minutos: Optional[int] = None
+    tempo_dedicado: Optional[int] = None
     status: str = 'PENDENTE'
-    tipo_revisao: Optional[str] = None
     descricao: Optional[str] = None
 
 class RevisaoUpdate(BaseModel):
     data_prevista: Optional[date] = None
     data_realizada: Optional[datetime] = None
-    tempo_minutos: Optional[int] = None
+    tempo_dedicado: Optional[int] = None
     status: Optional[str] = None
     descricao: Optional[str] = None
 
