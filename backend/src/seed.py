@@ -1,7 +1,9 @@
 
 import asyncio
-from datetime import datetime, date, timedelta
+import random
+from datetime import date, timedelta, datetime
 from sqlalchemy import text
+from faker import Faker
 
 from .database import SessionLocal, engine, Base
 from .models.user import User
@@ -11,77 +13,114 @@ from .models.revisao import Revisao
 from .security import get_password_hash
 from .core.config import settings
 
+fake = Faker('pt_BR')
+
 async def seed_data():
-    # Reset the database
+    """
+    Populates the database with realistic, thematically consistent mock data.
+    """
+    print("Iniciando o processo de seeding do banco de dados...")
+
     async with engine.begin() as conn:
-        await conn.execute(text("DROP SCHEMA public CASCADE;"))
-        await conn.execute(text("CREATE SCHEMA public;"))
-        await conn.run_sync(Base.metadata.create_all)
+        print("Limpando dados existentes (TRUNCATE)...")
+        table_names = [table.name for table in Base.metadata.sorted_tables if table.name != 'alembic_version']
+        if table_names:
+            quoted_names = [f'public."{name}"' for name in table_names]
+            await conn.execute(text(f"TRUNCATE TABLE {', '.join(quoted_names)} RESTART IDENTITY CASCADE;"))
+            print(f"Tabelas limpas: {', '.join(table_names)}.")
 
     db = SessionLocal()
     try:
-        # --- Create User ---
-        hashed_password = get_password_hash("123456")
+        # --- User ---
+        print("Criando usuário de teste...")
         user = User(
-            nome="Usuário de Teste",
-            email="teste@exemplo.com",
-            senha=hashed_password,
-            ui_theme=settings.DEFAULT_THEME,
+            nome="Usuário de Teste", email="teste@exemplo.com",
+            senha=get_password_hash("123456"), ui_theme=settings.DEFAULT_THEME,
             intervalo_revisoes=settings.DEFAULT_REVISION_INTERVAL
         )
         db.add(user)
-        await db.flush()  # Flush to get user.ID
-        print("Usuário de teste criado.")
+        await db.flush()
+
+        # --- Knowledge Base for Seeding ---
+        disciplinas_data = {
+            "Cálculo I": "Estudo de limites, derivadas e integrais.",
+            "Estrutura de Dados": "Implementação de estruturas como grafos e árvores.",
+            "Inteligência Artificial": "Fundamentos de IA e machine learning.",
+            "História do Brasil": "Do descobrimento à república.",
+            "Literatura Clássica": "Análise de obras greco-romanas.",
+            "Química Orgânica": "Estudo dos compostos de carbono.",
+            "Física Moderna": "Princípios de relatividade e mecânica quântica."
+        }
+        temas_base = {
+            "Cálculo I": ["Limites", "Derivadas", "Integrais", "Teorema Fundamental do Cálculo"],
+            "Estrutura de Dados": ["Grafos", "Árvores AVL", "Hashing", "Algoritmo de Dijkstra"],
+            "Inteligência Artificial": ["Redes Neurais", "Algoritmos Genéticos", "Modelos de Markov", "Deep Learning"],
+            "História do Brasil": ["Capitanias Hereditárias", "Ciclo do Ouro", "Inconfidência Mineira", "Independência"],
+            "Literatura Clássica": ["A Odisseia", "Édipo Rei", "As Metamorfoses", "Eneida"],
+            "Química Orgânica": ["Alcanos e Alcenos", "Reações de Substituição", "Isomeria Óptica", "Espectroscopia"],
+            "Física Moderna": ["Relatividade Especial", "Efeito Fotoelétrico", "Equação de Schrödinger", "Dualidade Onda-Partícula"]
+        }
+        descricoes_temas = {
+            "Limites": "Estudo do comportamento de funções próximo a um ponto.",
+            "Derivadas": "Taxa de variação instantânea e inclinação de curvas.",
+            "Integrais": "Cálculo de áreas sob curvas e antiderivação.",
+            "Grafos": "Estruturas de dados com vértices e arestas.",
+            "Redes Neurais": "Modelos computacionais inspirados no cérebro humano.",
+            "Ciclo do Ouro": "Período de intensa mineração de ouro no Brasil colonial.",
+            "A Odisseia": "Poema épico sobre o retorno de Odisseu a Ítaca.",
+            "Relatividade Especial": "Teoria de Einstein sobre espaço, tempo e gravidade.",
+        }
 
         # --- Create Disciplinas ---
-        disciplina1 = Disciplina(nome="Matemática", usuario_id=user.ID)
-        disciplina2 = Disciplina(nome="História", usuario_id=user.ID)
-        db.add_all([disciplina1, disciplina2])
-        await db.flush()  # Flush to get discipline IDs
-        print("Disciplinas de teste criadas.")
+        print("Criando disciplinas...")
+        disciplinas = []
+        for nome, desc in disciplinas_data.items():
+            disciplinas.append(Disciplina(nome=nome, cor=fake.hex_color(), descricao=desc, usuario_id=user.ID))
+        db.add_all(disciplinas)
+        await db.flush()
 
-        # --- Create Temas ---
-        tema1 = Tema(
-            nome="Álgebra",
-            data_criacao=date.today(),
-            disciplina_id=disciplina1.ID
-        )
-        db.add(tema1)
-        
-        tema2 = Tema(
-            nome="Revolução Francesa",
-            data_criacao=date.today(),
-            disciplina_id=disciplina2.ID
-        )
-        db.add(tema2)
-        await db.flush()  # Flush to get tema IDs
-        print("Temas de teste criados.")
-
-        # --- Generate Revisões from Tema ---
-        def create_revisions_for_tema(tema, revision_intervals):
-            intervals = [int(i) for i in revision_intervals.split(',')]
-            revisions = []
-            for days in intervals:
-                revisao_date = tema.data_criacao + timedelta(days=days)
-                revisao = Revisao(
-                    data_prevista=revisao_date,
-                    status="PENDENTE",
-                    tema_id=tema.ID
+        # --- Simulate a Year of Study ---
+        print("Simulando um ano de estudos com dados tematicamente consistentes...")
+        today = date.today()
+        for _ in range(150): # Create 150 themes
+            current_date = today - timedelta(days=random.randint(0, 365))
+            disciplina_aleatoria = random.choice(disciplinas)
+            
+            if disciplina_aleatoria.nome in temas_base:
+                nome_tema_base = random.choice(temas_base[disciplina_aleatoria.nome])
+                descricao_especifica = descricoes_temas.get(nome_tema_base, f"Estudo aprofundado sobre {nome_tema_base}.")
+                
+                novo_tema = Tema(
+                    nome=f"{nome_tema_base}: {fake.bs()}",
+                    descricao=descricao_especifica,
+                    disciplina_id=disciplina_aleatoria.ID
                 )
-                revisions.append(revisao)
-            return revisions
+                # Manually set creation date for simulation. Convert date to datetime.
+                novo_tema.criado_em = datetime.combine(current_date, datetime.min.time())
+                db.add(novo_tema)
+                await db.flush()
 
-        revisoes_tema1 = create_revisions_for_tema(tema1, user.intervalo_revisoes)
-        db.add_all(revisoes_tema1)
-        print(f"Revisões para o tema 'Álgebra' criadas.")
+                # --- Generate Revisions ---
+                revision_intervals = [int(i) for i in user.intervalo_revisoes.split(',')]
+                for days in revision_intervals:
+                    data_prevista_revisao = current_date + timedelta(days=days)
+                    revisao = Revisao(data_prevista=data_prevista_revisao, status="PENDENTE", tema_id=novo_tema.ID)
 
-        revisoes_tema2 = create_revisions_for_tema(tema2, user.intervalo_revisoes)
-        db.add_all(revisoes_tema2)
-        print(f"Revisões para o tema 'Revolução Francesa' criadas.")
+                    if data_prevista_revisao < today and random.random() < 0.75:
+                        revisao.status = "REALIZADA"
+                        revisao.data_realizada = data_prevista_revisao + timedelta(days=random.randint(0, 3))
+                        revisao.tempo_dedicado = random.choice([15, 30, 45, 60, 90])
+                        revisao.descricao = f"Revisão focada em {fake.catch_phrase()}. Pontos de dificuldade: {fake.sentence(nb_words=4)}."
+                    
+                    db.add(revisao)
 
-        await db.commit()  # Commit all changes
-        print("\nDados mockados criados com sucesso!")
+        print("Simulação concluída. Salvando dados no banco...")
+        await db.commit()
+        print("\nSeed concluído com sucesso! Dados realistas e temáticos foram criados.")
 
+    except Exception as e:
+        await db.rollback()
+        print(f"Ocorreu um erro durante o seeding: {e}")
     finally:
         await db.close()
 
