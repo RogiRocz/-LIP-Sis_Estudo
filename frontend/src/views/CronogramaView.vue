@@ -10,15 +10,19 @@
 import PageHeader from '@/components/PageHeader.vue'
 import ViewContainer from '@/components/ViewContainer.vue'
 import { tabsNavigation } from '@/utils/tabsNavigation'
-import { computed } from 'vue'
+import { computed, onActivated } from 'vue'
 
 const currentView = computed(() =>
-  tabsNavigation.value.find((tab) => tab.routeName === 'relatorios'),
+  tabsNavigation.value.find((tab) => tab.routeName === 'cronograma'),
 )
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
+
+onActivated(() => {
+  console.log('Componente Ativado')
+})
 </script>
 
 <style scoped>
-/* Estilos específicos para RelatoriosView */
+
 </style>

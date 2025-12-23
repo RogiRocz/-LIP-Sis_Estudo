@@ -1,14 +1,19 @@
 <template>
-	<PageHeader :pageTitle="name" :pageDescription="description" />
+  <ViewContainer>
+    <template #view-content>
+      <PageHeader :pageTitle="name" :pageDescription="description" />
+    </template>
+  </ViewContainer>
 </template>
 
 <script setup lang="ts">
 import PageHeader from '@/components/PageHeader.vue'
+import ViewContainer from '@/components/ViewContainer.vue'
 import { tabsNavigation } from '@/utils/tabsNavigation'
 import { computed } from 'vue'
 
 const currentView = computed(() =>
-	tabsNavigation.value.find((tab) => tab.routeName === 'home'),
+  tabsNavigation.value.find((tab) => tab.routeName === 'home'),
 )
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
