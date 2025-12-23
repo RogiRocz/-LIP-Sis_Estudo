@@ -18,9 +18,6 @@ const currentView = computed(() =>
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
 
-onActivated(() => {
-  console.log('Componente Ativado')
-})
 </script>
 
 <style scoped>
