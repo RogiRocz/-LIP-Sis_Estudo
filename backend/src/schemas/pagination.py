@@ -2,10 +2,10 @@ from pydantic import BaseModel, computed_field
 from typing import List, TypeVar, Generic
 from math import ceil
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class Page(BaseModel, Generic[T]):
-    """Modelo de resposta para listas paginadas."""
     items: List[T]
     total: int
     page: int
