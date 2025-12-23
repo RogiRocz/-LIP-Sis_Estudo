@@ -21,7 +21,7 @@
 				></v-app-bar-nav-icon>
 			</div>
 			<div class="drawer" v-else>
-				<v-tabs :v-model="route.name">
+				<v-tabs :v-model="route.name" stacked slider-transition="grow">
 					<template v-for="(tab, i) in tabsNavigation" :key="i">
 						<v-tab v-if="tab.isVisible" :to="{ name: tab.routeName }">
 							<v-icon :icon="tab.iconName" class="mr-2"></v-icon>
