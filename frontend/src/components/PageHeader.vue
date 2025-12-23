@@ -5,7 +5,7 @@
 				<h2>{{ pageTitle }}</h2>
 				<p>{{ pageDescription }}</p>
 			</v-col>
-			<slot id="page-header-actions"> </slot>
+			<slot name="page-header-actions" id="page-header-actions"> </slot>
 		</v-row>
 	</v-container>
 </template>
@@ -24,6 +24,10 @@ h2 {
 
 p {
 	color: #64748b;
+}
+
+#page-header-actions {
+	justify-content: flex-end;
 }
 
 </style>
