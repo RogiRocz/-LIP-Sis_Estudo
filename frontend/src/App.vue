@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppBar from '@/components/AppBar.vue'
-import NavigationDrawer from '@/components/NavigationDrawer.vue';
+import NavigationDrawer from '@/components/NavigationDrawer.vue'
 import { useUserStore } from '@/stores/useUserStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
@@ -21,7 +21,11 @@ const isRouterReady = ref(false)
 const routesWithoutAppBar = ref(['login', 'cadastro', 'not-found'])
 
 watch(route, (newVal) => {
-	if (newVal && typeof newVal.name === 'string' && routesWithoutAppBar.value.includes(newVal.name)) {
+	if (
+		newVal &&
+		typeof newVal.name === 'string' &&
+		routesWithoutAppBar.value.includes(newVal.name)
+	) {
 		drawerAuth.value = true
 	} else {
 		drawerAuth.value = false
@@ -42,10 +46,12 @@ onMounted(() => {
 	<v-app>
 		<NavigationDrawer />
 		<AppBar v-if="isRouterReady && !drawerAuth" />
-		<v-main :class="{ 'v-main-cadastro': drawerAuth }">
+		<v-main v-if="isRouterReady">
 			<router-view v-if="isRouterReady" v-slot="{ Component, route }">
 				<v-slide-x-transition mode="out-in">
-					<component :is="Component" :key="route.path"/>
+					<KeepAlive :max="10">
+						<component :is="Component" :key="route.path" />
+					</KeepAlive>
 				</v-slide-x-transition>
 			</router-view>
 		</v-main>
@@ -61,10 +67,5 @@ onMounted(() => {
 <style scoped>
 .v-main {
 	margin: 1vh 1vw;
-}
-
-.v-main-cadastro {
-	margin: 0;
-	padding: 0;
 }
 </style>
