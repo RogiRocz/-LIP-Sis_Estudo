@@ -25,9 +25,9 @@ const routes = [
 		component: () => import('@/views/DisciplinaView.vue'),
 	},
 	{
-		path: '/calendario',
-		name: 'calendario',
-		component: () => import('@/views/CalendarioView.vue'),
+		path: '/cronograma',
+		name: 'cronograma',
+		component: () => import('@/views/CronogramaView.vue'),
 	},
 	{
 		path: '/relatorios',
