@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Tema, Revisao } from '@/utils/apiTypes'
+import { Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
@@ -61,204 +61,139 @@ const temasVisiveis = computed(() => {
 	)
 })
 </script>
+
 <template>
-	<v-card class="card-main">
-		<div
+	<v-card class="card-main" variant="outlined">
+		<v-card-item
 			class="discipline-card-header"
 			@click="isThemesExpanded = !isThemesExpanded"
 		>
-			<div class="card-head-left">
-				<div class="color-dot" :style="{ backgroundColor: props.color }"></div>
-				<div class="card-head-info">
-					<v-card-title class="discipline-name pa-0">{{
-						name_disciplina
-					}}</v-card-title>
-					<v-card-subtitle class="theme-count pa-0"
-						>{{ tema_quantity }} temas</v-card-subtitle
-					>
-				</div>
+			<template #prepend>
+				<v-sheet
+					:color="props.color"
+					rounded="circle"
+					width="10"
+					height="10"
+				></v-sheet>
+			</template>
+
+			<div>
+				<v-card-title class="discipline-name pa-0">{{
+					name_disciplina
+				}}</v-card-title>
+				<v-card-subtitle class="theme-count pa-0"
+					>{{ tema_quantity }} temas</v-card-subtitle
+				>
+			</div>
+
+			<template #append>
+				<v-btn icon="delete" variant="text" size="small" @click.stop></v-btn>
 				<v-icon
 					:icon="isThemesExpanded ? 'expand_less' : 'expand_more'"
 					size="small"
 					class="expand-icon"
 				></v-icon>
-			</div>
-			<div class="card-head-actions">
-				<v-btn icon="delete" variant="text" size="small"></v-btn>
-			</div>
-		</div>
+			</template>
+		</v-card-item>
 
-		<v-container class="theme-list-container" fluid v-if="isThemesExpanded">
-			<v-row class="theme-list-row" v-if="temasVisiveis.length > 0">
-				<v-col
-					v-for="t in temasVisiveis"
-					:key="t.ID"
-					cols="12"
-					class="theme-col-wrapper"
-				>
-					<v-card class="theme-card d-flex align-center justify-space-between">
-						<div class="theme-card-content">
-							<v-card-text class="theme-name pa-0">{{ t.nome }}</v-card-text>
-							<v-card-subtitle class="theme-card-status pa-0">
-								<span>{{ getStatus(t.ID) }}</span>
-							</v-card-subtitle>
-						</div>
-						<div class="theme-card-actions">
-							<v-btn icon="play_arrow" variant="text" size="small"></v-btn>
-							<v-btn icon="delete" variant="text" size="small"></v-btn>
-						</div>
-					</v-card>
-				</v-col>
-			</v-row>
-			<v-row class="theme-list-row" v-else>
-				<v-col cols="12" class="theme-col-wrapper">
-					<p class="no-themes-message">
-						Nenhum tema com revisões agendadas para esta disciplina.
-					</p>
-				</v-col>
-			</v-row>
-		</v-container>
+		<v-slide-y-transition>
+			<div v-show="isThemesExpanded">
+				<v-divider></v-divider>
+				<v-list v-if="temasVisiveis.length > 0" lines="two" class="theme-list">
+					<v-list-item
+						v-for="t in temasVisiveis"
+						:key="t.ID"
+						class="theme-item"
+					>
+						<v-list-item-title class="theme-name">{{
+							t.nome
+						}}</v-list-item-title>
+						<v-list-item-subtitle class="theme-card-status">{{
+							getStatus(t.ID)
+						}}</v-list-item-subtitle>
 
-		<div class="add-theme-button-container" v-if="isThemesExpanded">
-			<v-btn prepend-icon="add">Adicionar tema</v-btn>
-		</div>
+						<template #append>
+							<v-btn
+								icon="play_arrow"
+								variant="text"
+								size="small"
+								@click.stop
+							></v-btn>
+							<v-btn
+								icon="delete"
+								variant="text"
+								size="small"
+								@click.stop
+							></v-btn>
+						</template>
+					</v-list-item>
+				</v-list>
+				<div v-else class="no-themes-message">
+					<p>Nenhum tema com revisões agendadas para esta disciplina.</p>
+				</div>
+				<v-divider></v-divider>
+				<v-card-actions class="add-theme-button-container">
+					<v-btn prepend-icon="add" color="secondary" variant="outlined" block
+						>Adicionar tema</v-btn
+					>
+				</v-card-actions>
+			</div>
+		</v-slide-y-transition>
 	</v-card>
 </template>
+
 <style scoped>
 .card-main {
 	margin: 10px;
 	border-radius: 12px;
-	box-shadow: none;
 	background-color: rgb(var(--v-theme-surface));
 	color: rgb(var(--v-theme-on-surface));
-	display: flex;
-	flex-direction: column;
-	min-width: 300px;
-	flex: 1;
 }
 
 .discipline-card-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 12px 16px;
-	border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
 	cursor: pointer;
-	gap: 16px;
-	height: 15vh;
-}
-
-.card-head-left {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-grow: 1;
-}
-
-.color-dot {
-	width: 10px;
-	height: 10px;
-	min-width: 10px;
-	border-radius: 50%;
-	flex-shrink: 0;
-}
-
-.card-head-info {
-	display: flex;
-	flex-direction: column;
-	flex-grow: 1;
+	min-height: 90px;
 }
 
 .discipline-name {
 	font-size: 1rem;
 	font-weight: 500;
-	color: white;
-	padding: 0;
-	line-height: 1.2;
-	white-space: normal !important;
+	white-space: normal;
 }
 
 .theme-count {
 	font-size: 0.8rem;
 	color: rgb(var(--v-theme-primary));
-	padding: 0;
-	line-height: 1.2;
-	white-space: normal !important;
 }
 
 .expand-icon {
 	transition: transform 0.2s ease;
 }
 
-.card-head-actions {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	flex-shrink: 0;
+.theme-list {
+	background-color: transparent;
 }
 
-.theme-list-container {
-	padding: 8px 16px !important;
+.theme-item {
+	border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
 }
 
-.theme-list-row {
-	margin: 0;
-}
-
-.theme-col-wrapper {
-	padding: 4px !important;
-}
-
-.theme-card {
-	background-color: rgb(var(--v-theme-surface-variant));
-	border-radius: 8px;
-	box-shadow: none;
-	padding: 0px;
-	width: 100%;
-	min-height: 20vh;
-}
-
-.theme-card-content {
-	flex-grow: 1;
-	display: flex;
-	flex-direction: column;
-	height: 20vh;
+.theme-item:last-child {
+	border-bottom: none;
 }
 
 .theme-name {
 	font-size: 0.9rem;
-	font-weight: 400;
-	color: rgb(var(--v-theme-on-surface));
-	padding: 8px 12px 0px 12px !important;
 	white-space: normal;
-	line-height: 1.3;
-	height: 8vh;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	display: -webkit-box;
+	line-clamp: 1;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
 }
 
 .theme-card-status {
 	font-size: 0.75rem;
-	color: rgb(var(--v-theme-on-surface-variant));
-	padding: 0px 12px 8px 12px !important;
-	line-height: 1.2;
 	white-space: normal;
-}
-
-.theme-card-actions {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: 4px;
-}
-
-.theme-card-actions .v-btn {
-	color: rgb(var(--v-theme-on-surface-variant));
-	opacity: 0.8;
-}
-
-.theme-card-actions .v-btn:hover {
-	opacity: 1;
 }
 
 .no-themes-message {
@@ -268,19 +203,13 @@ const temasVisiveis = computed(() => {
 }
 
 .add-theme-button-container {
-	padding: 8px 16px;
-	border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
-	text-align: center;
 	margin: 1vh 0;
+	padding: 8px 16px;
+	display: flex;
+	justify-content: center;
 }
 
 .add-theme-button-container .v-btn {
-	background-color: rgb(var(--v-theme-primary));
-	color: rgb(var(--v-theme-on-primary));
-	border-radius: 8px;
-	padding: 8px 16px;
 	text-transform: none;
-	height: 40px;
-	width: 100%;
 }
 </style>
