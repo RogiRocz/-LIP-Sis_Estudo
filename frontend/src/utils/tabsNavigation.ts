@@ -7,7 +7,7 @@ export const tabsNavigation = ref([
 		componentName: 'HomeComponent',
 		routeName: 'home',
 		description: 'Página inicial do aplicativo',
-		isVisible: false,
+		isVisible: true,
 	},
 	{
 		name: 'Login',
@@ -29,7 +29,7 @@ export const tabsNavigation = ref([
 		name: 'Cronograma',
 		iconName: 'calendar_month',
 		componentName: 'CronogramaComponent',
-		routeName: 'calendario',
+		routeName: 'cronograma',
 		description: 'Acompanhe suas revisões agendadas e sessões de estudo',
 		isVisible: true,
 	},
