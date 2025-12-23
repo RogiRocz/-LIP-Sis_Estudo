@@ -215,14 +215,14 @@ const temasVisiveis = computed(() => {
 	box-shadow: none;
 	padding: 0px;
 	width: 100%;
-	min-height: 15vh;
+	min-height: 20vh;
 }
 
 .theme-card-content {
 	flex-grow: 1;
 	display: flex;
 	flex-direction: column;
-	height: 15vh;
+	height: 20vh;
 }
 
 .theme-name {
