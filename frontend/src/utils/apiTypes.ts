@@ -24,23 +24,23 @@ interface Page<T> {
 }
 
 interface Tema {
-	ID: number
+	ID?: number
 	disciplina_id: number
 	nome: string
 	descricao: string
 }
 
 interface Disciplina {
-	ID: number
-	tema_id: number
+	ID?: number
+	tema_id?: number
 	nome: string
 	descricao: string | null
 	cor: string
 }
 
 interface Revisao {
-	ID: number
-	tema_id: number
+	ID?: number
+	tema_id?: number
 	data_prevista: string | null
 	data_realizada: string | null
 	tempo_dedicado: number | null
