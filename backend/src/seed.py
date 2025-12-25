@@ -51,6 +51,19 @@ async def seed_data():
         db.add(user)
         await db.flush()
 
+        # --- NOVO: Vínculo Automático com o Auth do Supabase ---
+        # Isso evita que você precise rodar SQL manual toda vez
+        res = await db.execute(text("""
+            SELECT id FROM auth.users WHERE email = :email
+        """), {"email": user.email})
+        supabase_uuid = res.scalar()
+
+        if supabase_uuid:
+            user.supabase_id = supabase_uuid
+            print(f"Vínculo com Supabase UUID {supabase_uuid} estabelecido.")
+        else:
+            print("AVISO: Usuário 'teste@exemplo.com' não encontrado no Auth do Supabase. O RLS não funcionará.")
+
         # --- Knowledge Base for Seeding ---
         disciplinas_data = {
             "Cálculo I": "Estudo de limites, derivadas e integrais.",
