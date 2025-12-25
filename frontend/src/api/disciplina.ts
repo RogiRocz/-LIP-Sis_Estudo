@@ -16,7 +16,7 @@ async function createDisciplina(disciplina: Disciplina) {
 async function getDisciplinas(p?: PageParams) : Promise <Page<Disciplina[]>> {
   try {
     const response = await api.get(resourceUrl, {
-      data: {
+      params: {
         page: p?.page,
         size: p?.size
       }

@@ -7,7 +7,7 @@ const resourceUrl = '/revisoes'
 async function getRevisoes(p?: PageParams) {
   try {
     const response = await api.get(resourceUrl, {
-      data: {
+      params: {
         page: p?.page,
         size: p?.size
       }
@@ -42,7 +42,7 @@ async function concluirRevisao(id: number, revisao: Revisao) {
 async function getCronograma(p?: PageParams) {
   try {
     const response = await api.get(`${resourceUrl}/cronograma`, {
-      data: {
+      params: {
         page: p?.page,
         size: p?.size
       }

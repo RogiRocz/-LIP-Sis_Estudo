@@ -27,7 +27,7 @@ async function createTema(disciplina_id: number, tema: Tema) {
 async function getTemas(disciplina_id: number, p?: PageParams) {
   try {   
     const response = await api.get(`${nestedResourceUrl}/${disciplina_id}/temas`, {
-      data: {
+      params: {
         page: p?.page,
         size: p?.size
       }
