@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { createVuetify } from 'vuetify'
 import 'vuetify/styles'
 import 'material-symbols/outlined.css'
+import {aliases, md} from 'vuetify/iconsets/md'
 
 /**
  * Paleta de Cores StudyFlow:
@@ -40,7 +41,7 @@ const StudyFlowTheme = {
 				surface: '1E1E1E',
 				primary: '17a2b8',
 				secondary: '667eea',
-				card: 'fff',
+				card: 'f0f4f8',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
@@ -52,21 +53,21 @@ const StudyFlowTheme = {
 	},
 }
 
-const materialSymbols = {
-	component: (props) =>
-		h('span', { ...props, class: 'material-symbols-outlined' }, props.icon),
-}
-
 export default createVuetify({
 	theme: StudyFlowTheme,
 	icons: {
-		defaultSet: 'materialSymbols',
+		defaultSet: 'md',
+		aliases,
 		sets: {
-			materialSymbols,
-		},
-		aliases: {
-			menu: 'menu',
-			book_ribbon: 'book',
-		},
+			md: {
+				...md,
+				component: (props: any) => {
+					return h('span', {
+						...props,
+						class: ['v-icon', 'notranslate', 'material-symbols-outlined', props.class],
+					  }, props.icon)
+				}
+			}
+		}
 	},
 })
