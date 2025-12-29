@@ -6,6 +6,8 @@ import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { watch, onMounted, ref } from 'vue'
+import { useAprendizadoStore } from './stores/useAprendizadoStore'
+import { supabase } from './config/supabase'
 
 const userStore = useUserStore()
 const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
@@ -32,12 +34,21 @@ watch(route, (newVal) => {
 	}
 })
 
-onMounted(() => {
+onMounted(async () => {
 	router.isReady().then(() => {
 		isRouterReady.value = true
 	})
+
+	supabase.auth.onAuthStateChange(async (event, session) => {
+		if (session) {
+			await fetchUser()
+			await useAprendizadoStore().setupRealtime()
+		}
+	})
+
 	if (isAuthenticated.value) {
-		fetchUser()
+		await fetchUser()
+		useAprendizadoStore().setupRealtime()
 	}
 })
 </script>
@@ -46,7 +57,7 @@ onMounted(() => {
 	<v-app>
 		<NavigationDrawer />
 		<AppBar v-if="isRouterReady && !drawerAuth" />
-		<v-main v-if="isRouterReady">
+		<v-main v-if="isRouterReady" :class="{ 'drawer-auth': drawerAuth }">
 			<router-view v-if="isRouterReady" v-slot="{ Component, route }">
 				<v-slide-x-transition mode="out-in">
 					<KeepAlive :max="10">
@@ -67,5 +78,9 @@ onMounted(() => {
 <style scoped>
 .v-main {
 	margin: 1vh 1vw;
+}
+
+.drawer-auth {
+	margin: 0;
 }
 </style>
