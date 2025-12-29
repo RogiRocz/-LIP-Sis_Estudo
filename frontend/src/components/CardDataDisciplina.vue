@@ -1,50 +1,22 @@
 <script setup lang="ts">
+import ConfirmDialog from './ConfirmDialog.vue'
 import { Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
+import { deleteDisciplina } from '@/api/disciplina'
+import { useSnackbarStore } from '@/stores/useSnackbarStore'
 
 const aprendizadoStore = useAprendizadoStore()
 const { revisoes } = storeToRefs(aprendizadoStore)
+const snackbarStore = useSnackbarStore()
+const { addMessage } = snackbarStore
 
 const isThemesExpanded = ref(false)
-
-function getStatus(tema_id: number): string {
-	const revisoes_tema = revisoes.value?.get(tema_id)
-
-	if (!revisoes_tema || revisoes_tema.length === 0) {
-		return 'Nenhuma revisão agendada.'
-	}
-
-	const pendenteOuAtrasada = revisoes_tema.filter(
-		(rev) => rev.status === 'PENDENTE' || rev.status === 'ATRASADA',
-	)
-
-	if (pendenteOuAtrasada.length === 0) {
-		const todasRealizadas = revisoes_tema.every((r) => r.status === 'REALIZADA')
-		if (todasRealizadas) {
-			return 'Todas as revisões concluídas.'
-		}
-		return 'Nenhuma revisão pendente/atrasada.'
-	}
-
-	pendenteOuAtrasada.sort(
-		(a, b) =>
-			new Date(a.data_prevista).getTime() - new Date(b.data_prevista).getTime(),
-	)
-
-	const primeiraRevisao = pendenteOuAtrasada[0]
-	const dataPrevista = new Date(primeiraRevisao.data_prevista)
-	const dataFormatada = dataPrevista.toLocaleDateString('pt-BR', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-	})
-
-	return `${primeiraRevisao.status} em ${dataFormatada}`
-}
+const confirmDialogRef = ref<InstanceType<typeof ConfirmDialog> | null>(null)
 
 const props = defineProps<{
+	id_disciplina: number
 	name_disciplina: string
 	description: string
 	color: string
@@ -52,14 +24,79 @@ const props = defineProps<{
 	temas: Array<Tema> | null
 }>()
 
-const temasVisiveis = computed(() => {
-	if (!props.temas) {
-		return []
+const formatarData = (dataStr: string) => {
+	return new Date(dataStr).toLocaleDateString('pt-BR', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	})
+}
+
+function getStatus(tema_id: number): string {
+	const revisoes_tema = revisoes.value?.get(tema_id) || []
+	const hoje = new Date().setHours(0, 0, 0, 0)
+
+	if (revisoes_tema.length === 0) return 'Nenhuma revisão agendada.'
+
+	const pendentes = revisoes_tema.filter((rev) => {
+		const dataRev = new Date(rev.data_prevista).getTime()
+
+		return (
+			rev.status !== 'REALIZADA' &&
+			(rev.status === 'ATRASADA' ||
+				rev.status === 'PENDENTE' ||
+				dataRev <= hoje)
+		)
+	})
+
+	if (pendentes.length === 0) {
+		return revisoes_tema.every((r) => r.status === 'REALIZADA')
+			? 'Todas as revisões concluídas.'
+			: 'Nenhuma revisão para hoje.'
 	}
-	return props.temas.filter(
-		(tema) => getStatus(tema.ID) !== 'Nenhuma revisão agendada.',
+
+	pendentes.sort(
+		(a, b) =>
+			new Date(a.data_prevista).getTime() - new Date(b.data_prevista).getTime(),
 	)
+
+	return pendentes
+		.map((rev) => {
+			const dataRev = new Date(rev.data_prevista).getTime()
+			let label = rev.status
+
+			if (dataRev === hoje) label = 'HOJE'
+			else if (dataRev < hoje) label = 'ATRASADA'
+
+			return `${label} em ${formatarData(rev.data_prevista)}`
+		})
+		.join('\n')
+}
+
+const temasVisiveis = computed(() => {
+	if (!props.temas) return []
+
+	return props.temas.filter((tema) => {
+		const lista = revisoes.value?.get(tema.ID) || []
+		return lista.some((r) => r.status !== 'REALIZADA')
+	})
 })
+
+async function handleDeleteDisciplina(id: number) {
+	const confirmed = await confirmDialogRef.value?.open(
+		'Excluir Disciplina',
+		'Tem certeza? Todos os temas e revisões vinculados serão perdidos.',
+	)
+
+	if (confirmed) {
+		try {
+			await deleteDisciplina(id)
+			addMessage({ text: 'Disciplina excluída com sucesso.', color: 'success' })
+		} catch (error) {
+			addMessage({ text: 'Erro ao excluir a disciplina.', color: 'error' })
+		}
+	}
+}
 </script>
 
 <template>
@@ -69,7 +106,16 @@ const temasVisiveis = computed(() => {
 			@click="isThemesExpanded = !isThemesExpanded"
 		>
 			<template #prepend>
+				<v-divider
+					v-if="!isThemesExpanded"
+					vertical
+					thickness="3"
+					length="4vh"
+					class="border-opacity-100"
+					:color="props.color"
+				></v-divider>
 				<v-sheet
+					v-if="isThemesExpanded"
 					:color="props.color"
 					rounded="circle"
 					width="10"
@@ -77,17 +123,20 @@ const temasVisiveis = computed(() => {
 				></v-sheet>
 			</template>
 
-			<div>
-				<v-card-title class="discipline-name pa-0">{{
-					name_disciplina
-				}}</v-card-title>
-				<v-card-subtitle class="theme-count pa-0"
-					>{{ tema_quantity }} temas</v-card-subtitle
-				>
-			</div>
+			<v-card-title class="discipline-name pa-0">{{
+				name_disciplina
+			}}</v-card-title>
+			<v-card-subtitle class="theme-count pa-0"
+				>{{ tema_quantity }} temas</v-card-subtitle
+			>
 
 			<template #append>
-				<v-btn icon="delete" variant="text" size="small" @click.stop></v-btn>
+				<v-btn
+					icon="delete"
+					variant="text"
+					size="small"
+					@click.stop="handleDeleteDisciplina(props.id_disciplina)"
+				></v-btn>
 				<v-icon
 					:icon="isThemesExpanded ? 'expand_less' : 'expand_more'"
 					size="small"
@@ -96,7 +145,7 @@ const temasVisiveis = computed(() => {
 			</template>
 		</v-card-item>
 
-		<v-slide-y-transition>
+		<v-expand-transition>
 			<div v-show="isThemesExpanded">
 				<v-divider></v-divider>
 				<v-list v-if="temasVisiveis.length > 0" lines="two" class="theme-list">
@@ -138,8 +187,9 @@ const temasVisiveis = computed(() => {
 					>
 				</v-card-actions>
 			</div>
-		</v-slide-y-transition>
+		</v-expand-transition>
 	</v-card>
+	<ConfirmDialog ref="confirmDialogRef" />
 </template>
 
 <style scoped>
@@ -193,12 +243,12 @@ const temasVisiveis = computed(() => {
 
 .theme-card-status {
 	font-size: 0.75rem;
-	white-space: normal;
+	white-space: pre-line;
 }
 
 .no-themes-message {
 	text-align: center;
-	color: rgb(var(--v-theme-on-surface-variant));
+	color: rgb(var(--v-theme-on-surface));
 	padding: 16px;
 }
 
