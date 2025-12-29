@@ -1,14 +1,11 @@
 import { AuthResponse } from '@/utils/apiTypes'
 import api from './apiConnect'
-import axios from 'axios'
 
-const authApi = axios.create({
-	baseURL: `${api.defaults.baseURL}/auth`,
-})
+const resourceUrl = '/auth'
 
 async function register(userData: any): Promise<AuthResponse> {
 	try {
-		const response = await authApi.post<AuthResponse>('/register', userData)
+		const response = await api.post<AuthResponse>(`${resourceUrl}/register`, userData)
 		return response.data
 	} catch (error) {
 		console.error('Erro ao criar usuário: ', error)
@@ -18,7 +15,7 @@ async function register(userData: any): Promise<AuthResponse> {
 
 async function login(userData: any): Promise<AuthResponse> {
 	try {
-		const response = await authApi.post<AuthResponse>('/login', userData)
+		const response = await api.post<AuthResponse>(`${resourceUrl}/login`, userData)
 		return response.data
 	} catch (error) {
 		console.error('Erro ao logar usuário: ', error)

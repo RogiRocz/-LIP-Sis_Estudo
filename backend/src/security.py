@@ -23,6 +23,13 @@ def get_password_hash(password):
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
+
+    if "aud" not in to_encode:
+        to_encode.update({"aud": "authenticated"})
+
+    if "role" not in to_encode:
+        to_encode.update({"role": "authenticated"})
+
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -39,14 +46,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     )
     try:
         token = credentials.credentials
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
-        email: str = payload.get("sub")
-        if email is None:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+        user_uuid: str = payload.get("sub")
+        if user_uuid is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
         
-    result = await db.execute(select(User).where(User.email == email))
+    result = await db.execute(select(User).where(User.supabase_id == user_uuid))
     user = result.scalars().first()
 
     if user is None:

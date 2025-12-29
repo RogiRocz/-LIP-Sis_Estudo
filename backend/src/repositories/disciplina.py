@@ -16,12 +16,9 @@ class DisciplinaRepository:
         return db_disciplina
 
     async def get_paginated_disciplinas_by_user_id(self, usuario_id: int, skip: int, limit: int) -> Tuple[List[DisciplinaModel], int]:
-        """Busca disciplinas paginadas e a contagem total."""
-        # Query para contar o total de itens
         count_query = select(func.count()).select_from(DisciplinaModel).where(DisciplinaModel.usuario_id == usuario_id)
         total = await self.db.scalar(count_query)
 
-        # Query para buscar os itens da página
         query = select(DisciplinaModel).where(DisciplinaModel.usuario_id == usuario_id).offset(skip).limit(limit)
         result = await self.db.execute(query)
         disciplinas = result.scalars().all()

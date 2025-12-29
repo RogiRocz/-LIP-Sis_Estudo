@@ -4,6 +4,7 @@ from ..models.revisao import Revisao as RevisaoModel
 from ..models.tema import Tema as TemaModel
 from ..models.disciplina import Disciplina as DisciplinaModel
 from typing import List, Tuple
+from sqlalchemy.orm import joinedload
 
 class RevisaoRepository:
     def __init__(self, db: AsyncSession):
@@ -26,6 +27,7 @@ class RevisaoRepository:
             .join(TemaModel)
             .join(DisciplinaModel)
             .where(DisciplinaModel.usuario_id == user_id)
+            .options(joinedload(RevisaoModel.tema).joinedload(TemaModel.disciplina))
         )
 
         count_query = select(func.count()).select_from(base_query.subquery())

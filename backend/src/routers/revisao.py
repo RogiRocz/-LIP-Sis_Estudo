@@ -17,6 +17,15 @@ async def get_revisoes(
 ):
     return await service.get_revisoes_for_user(user.ID, page, size)
 
+@router.put("/{revisao_id}", response_model=Revisao)
+async def update_revisao(
+    revisao_id: int,
+    revisao: RevisaoUpdate,
+    user: UserModel = Depends(get_current_user),
+    service: RevisaoService = Depends(),
+):
+    return await service.update_revisao(revisao_id, revisao, user.ID)
+
 @router.put("/{revisao_id}/concluir", response_model=Revisao)
 async def concluir_revisao(revisao_id: int, revisao: RevisaoUpdate, user: UserModel = Depends(get_current_user), service: RevisaoService = Depends()):
     return await service.concluir_revisao(revisao_id, revisao, user.ID)

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import AppBar from '@/components/AppBar.vue'
-import NavigationDrawer from '@/components/NavigationDrawer.vue';
+import NavigationDrawer from '@/components/NavigationDrawer.vue'
 import { useUserStore } from '@/stores/useUserStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { watch, onMounted, ref } from 'vue'
+import { useAprendizadoStore } from './stores/useAprendizadoStore'
+import { supabase } from './config/supabase'
 
 const userStore = useUserStore()
 const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
@@ -21,19 +23,32 @@ const isRouterReady = ref(false)
 const routesWithoutAppBar = ref(['login', 'cadastro', 'not-found'])
 
 watch(route, (newVal) => {
-	if (newVal && typeof newVal.name === 'string' && routesWithoutAppBar.value.includes(newVal.name)) {
+	if (
+		newVal &&
+		typeof newVal.name === 'string' &&
+		routesWithoutAppBar.value.includes(newVal.name)
+	) {
 		drawerAuth.value = true
 	} else {
 		drawerAuth.value = false
 	}
 })
 
-onMounted(() => {
+onMounted(async () => {
 	router.isReady().then(() => {
 		isRouterReady.value = true
 	})
+
+	supabase.auth.onAuthStateChange(async (event, session) => {
+		if (session) {
+			await fetchUser()
+			await useAprendizadoStore().setupRealtime()
+		}
+	})
+
 	if (isAuthenticated.value) {
-		fetchUser()
+		await fetchUser()
+		useAprendizadoStore().setupRealtime()
 	}
 })
 </script>
@@ -42,10 +57,12 @@ onMounted(() => {
 	<v-app>
 		<NavigationDrawer />
 		<AppBar v-if="isRouterReady && !drawerAuth" />
-		<v-main :class="{ 'v-main-cadastro': drawerAuth }">
+		<v-main v-if="isRouterReady" :class="{ 'drawer-auth': drawerAuth }">
 			<router-view v-if="isRouterReady" v-slot="{ Component, route }">
 				<v-slide-x-transition mode="out-in">
-					<component :is="Component" :key="route.path"/>
+					<KeepAlive :max="10">
+						<component :is="Component" :key="route.path" />
+					</KeepAlive>
 				</v-slide-x-transition>
 			</router-view>
 		</v-main>
@@ -63,8 +80,7 @@ onMounted(() => {
 	margin: 1vh 1vw;
 }
 
-.v-main-cadastro {
+.drawer-auth {
 	margin: 0;
-	padding: 0;
 }
 </style>
