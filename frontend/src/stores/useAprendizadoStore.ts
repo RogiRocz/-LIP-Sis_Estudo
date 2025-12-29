@@ -5,9 +5,9 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
-	const disciplinas = ref<Disciplina[] | null>(null)
-	const temas = ref<Map<number, Tema[]> | null>(null)
-	const revisoes = ref<Map<number, Revisao[]> | null>(null)
+	const disciplinas = ref<Disciplina[] | null>([])
+	const temas = ref<Map<number, Tema[]> | null>(new Map())
+	const revisoes = ref<Map<number, Revisao[]> | null>(new Map())
 	const loading = ref(true)
 
 	const disciplinas_quantity = computed(() => disciplinas.value?.length || 0)
@@ -18,17 +18,14 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	}
 
 	const setDisciplinas = (data: Disciplina[] | null) => {
-		disciplinas.value = null
 		disciplinas.value = data
 	}
 
 	const setTemas = (data: Map<number, Tema[]> | null) => {
-		temas.value = null
 		temas.value = data
 	}
 
 	const setRevisoes = (data: Map<number, Revisao[]> | null) => {
-		revisoes.value = null
 		revisoes.value = data
 	}
 
@@ -38,31 +35,36 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		revisoes.value = null
 	}
 
-	const setupRealtime = () => {
+	const setupRealtime = async () => {
+		await supabase.removeAllChannels()
+
 		const channel = supabase
-			.channel('schema-db-changes')
+			.channel('db-public-changes')
 			.on(
 				'postgres_changes',
 				{ event: '*', schema: 'public', table: 'Disciplina' },
 				(payload) => {
-					syncArray(disciplinas.value, payload)
+					disciplinas.value = syncArray(disciplinas.value, payload)
 				},
 			)
 			.on(
 				'postgres_changes',
-				{ event: 'INSERT', schema: 'public', table: 'Tema' },
+				{ event: '*', schema: 'public', table: 'Tema' },
 				(payload) => {
-					syncMap(temas.value, payload, 'disciplina_id')
+					temas.value = syncMap(temas.value, payload, 'disciplina_id')
 				},
 			)
 			.on(
 				'postgres_changes',
-				{ event: 'INSERT', schema: 'public', table: 'Revisao' },
+				{ event: '*', schema: 'public', table: 'Revisao' },
 				(payload) => {
-					syncMap(revisoes.value, payload, 'tema_id')
+					revisoes.value = syncMap(revisoes.value, payload, 'tema_id')
 				},
 			)
-			.subscribe()
+			.subscribe((status, err) => {
+				// console.log('Status do Canal:', status)
+				// console.error('Erro no Canal:', err)
+			})
 
 		return channel
 	}
