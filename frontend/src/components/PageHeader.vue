@@ -5,16 +5,18 @@
 				<h2>{{ pageTitle }}</h2>
 				<p>{{ pageDescription }}</p>
 			</v-col>
-			<slot name="page-header-actions" id="page-header-actions"> </slot>
+			<v-col id="page-header-actions">
+				<slot name="page-header-actions"> </slot>
+			</v-col>
 		</v-row>
 	</v-container>
 </template>
 
 <script setup lang="ts">
 const props = defineProps<{
-	pageTitle: string,
-	pageDescription: string,
-}>();
+	pageTitle: string
+	pageDescription: string
+}>()
 </script>
 
 <style scoped>
@@ -27,7 +29,12 @@ p {
 }
 
 #page-header-actions {
+	display: flex;
+	align-items: center;
 	justify-content: flex-end;
 }
 
+#page-header-actions > :deep(.v-btn) {
+	margin: 0 .5vw;
+}
 </style>
