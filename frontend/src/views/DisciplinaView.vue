@@ -37,8 +37,6 @@ const currentView = computed(() =>
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
 
-const disciplineDialogRef = ref<InstanceType<typeof DisciplineDialog> | null>(null)
-
 watch(page, async (newPage) => {
 	try {
 		loading.value = true
