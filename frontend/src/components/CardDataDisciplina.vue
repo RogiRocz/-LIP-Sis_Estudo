@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import ConfirmDialog from './ConfirmDialog.vue'
+import DisciplineDialog from './DisciplineDialog.vue'
 import { Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { deleteDisciplina } from '@/api/disciplina'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
+import { useDisciplinaStore } from '@/stores/useDisciplinaStore'
 
 const aprendizadoStore = useAprendizadoStore()
 const { revisoes } = storeToRefs(aprendizadoStore)
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
+const disciplinaStore = useDisciplinaStore()
+const { isEditing } = storeToRefs(disciplinaStore)
 
 const isThemesExpanded = ref(false)
 const confirmDialogRef = ref<InstanceType<typeof ConfirmDialog> | null>(null)
@@ -131,7 +135,30 @@ async function handleDeleteDisciplina(id: number) {
 			>
 
 			<template #append>
+				<DisciplineDialog
+					:title="'Editar disciplina'"
+					:subtitle="'Altere os dados da disciplina'"
+					:whichFuncToCall="'update'"
+					:initialData="{
+						ID: props.id_disciplina,
+						nome: props.name_disciplina,
+						descricao: props.description,
+						cor: props.color
+					}"
+				>
+					<template #button="activatorProps">
+						<v-btn
+							v-show="isEditing"
+							icon="edit"
+							variant="text"
+							size="small"
+							v-bind="activatorProps"
+							@click.stop=""
+						></v-btn>
+					</template>
+				</DisciplineDialog>
 				<v-btn
+					v-show="isEditing"
 					icon="delete"
 					variant="text"
 					size="small"
@@ -162,18 +189,28 @@ async function handleDeleteDisciplina(id: number) {
 						}}</v-list-item-subtitle>
 
 						<template #append>
-							<v-btn
-								icon="play_arrow"
-								variant="text"
-								size="small"
-								@click.stop
-							></v-btn>
-							<v-btn
-								icon="delete"
-								variant="text"
-								size="small"
-								@click.stop
-							></v-btn>
+							<div v-show="!isEditing">
+								<v-btn
+									icon="play_arrow"
+									variant="text"
+									size="small"
+									@click.stop
+								></v-btn>
+								<v-btn
+									icon="delete"
+									variant="text"
+									size="small"
+									@click.stop
+								></v-btn>
+							</div>
+							<div v-show="isEditing">
+								<v-btn
+									icon="edit_square"
+									variant="text"
+									size="small"
+									@click.stop
+								></v-btn>
+							</div>
 						</template>
 					</v-list-item>
 				</v-list>
