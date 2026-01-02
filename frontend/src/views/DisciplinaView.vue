@@ -3,10 +3,10 @@ import PageHeader from '@/components/PageHeader.vue'
 import MainContainer from '@/components/MainContainer.vue'
 import CardDataDisciplina from '@/components/CardDataDisciplina.vue'
 import ViewContainer from '@/components/ViewContainer.vue'
-import NewDisciplineDialog from '@/components/NewDisciplineDialog.vue'
+import DisciplineDialog from '@/components/DisciplineDialog.vue'
 
 import { tabsNavigation } from '@/utils/tabsNavigation'
-import { computed, onActivated, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { getDisciplinas } from '@/api/disciplina'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
@@ -14,6 +14,7 @@ import { storeToRefs } from 'pinia'
 import { Disciplina, Revisao, Tema } from '@/utils/apiTypes'
 import { getTemas } from '@/api/tema'
 import { getRevisoes } from '@/api/revisao'
+import { useDisciplinaStore } from '@/stores/useDisciplinaStore'
 
 const ITENS_PER_PAGE = 12
 
@@ -24,6 +25,9 @@ const { temas_quantity, reset } = aprendizadoStore
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
 
+const disciplinaStore = useDisciplinaStore()
+const { isEditing } = storeToRefs(disciplinaStore)
+
 const page = ref(1)
 const total_pages = ref(1)
 
@@ -33,6 +37,7 @@ const currentView = computed(() =>
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
 
+const disciplineDialogRef = ref<InstanceType<typeof DisciplineDialog> | null>(null)
 
 watch(page, async (newPage) => {
 	try {
@@ -149,7 +154,7 @@ async function fetchTemas() {
 }
 
 async function fetchRevisoes() {
-	try {		
+	try {
 		if (!temas.value) return
 
 		const ids_temas: number[] = []
@@ -157,7 +162,7 @@ async function fetchRevisoes() {
 			temas_array.forEach((tema: Tema) => ids_temas.push(tema.ID))
 		}
 
-		const revisoes_map = new Map<number, Revisao[]>()		
+		const revisoes_map = new Map<number, Revisao[]>()
 
 		if (ids_temas.length > 0) {
 			const arrayRevisoes = await getRevisoes()
@@ -171,7 +176,7 @@ async function fetchRevisoes() {
 				})
 			}
 		}
-		
+
 		aprendizadoStore.setRevisoes(revisoes_map)
 	} catch (error) {
 		console.log('Erro ao carregar os dados das revisões.', error)
@@ -192,13 +197,20 @@ onMounted(async () => {
 		<template #view-content>
 			<PageHeader :pageTitle="name" :pageDescription="description">
 				<template #page-header-actions>
-					<NewDisciplineDialog>
+					<v-btn
+						:prepend-icon="isEditing ? 'close' : 'edit'"
+						:class="isEditing ? 'bg-error' : 'botao-gradient'"
+						@click="isEditing = !isEditing"
+					>
+						{{ isEditing ? 'Cancelar Edição' : 'Editar disciplinas' }}
+					</v-btn>
+					<DisciplineDialog :title="'Nova disciplina'" :subtitle="'Crie uma nova disciplina para organizar seus estudos'" :whichFuncToCall="'create'">
 						<template #button="props">
 							<v-btn prepend-icon="add" class="botao-gradient" v-bind="props"
 								>Nova disciplina</v-btn
 							>
 						</template>
-					</NewDisciplineDialog>
+					</DisciplineDialog>
 				</template>
 			</PageHeader>
 			<MainContainer v-if="!loading">
