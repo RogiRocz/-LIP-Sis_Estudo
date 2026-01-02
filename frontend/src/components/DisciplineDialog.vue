@@ -2,8 +2,10 @@
 import { required } from '@/utils/rulesAuth'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { createDisciplina, updateDisciplina } from '@/api/disciplina'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getColorName, initColors, ORIGINAL_COLORS } from 'ntc-ts'
+import { useAppBarStore } from '@/stores/useAppBarStore'
+import { storeToRefs } from 'pinia'
 
 const dialog = ref(false)
 const loading = ref(false)
@@ -15,6 +17,14 @@ const id = ref(null)
 
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
+
+const appBarStore = useAppBarStore()
+const { nameDisplay } = storeToRefs(appBarStore)
+
+const actionsWidthDialog = computed(() => {
+	return nameDisplay.value === 'xs' ? '100%' : '50vw'
+})
+
 
 const props = defineProps<{
 	title: string
@@ -134,7 +144,7 @@ const handlePickerHover = (event: MouseEvent) => {
 </script>
 
 <template>
-	<v-dialog v-model="dialog" max-width="50vw" scrollable>
+	<v-dialog v-model="dialog" :max-width="actionsWidthDialog" scrollable>
 		<template v-slot:activator="{ props: activatorProps }">
 			<slot name="button" v-bind="activatorProps"></slot>
 		</template>
@@ -203,7 +213,6 @@ const handlePickerHover = (event: MouseEvent) => {
 <style scoped>
 .picker-container {
 	position: relative;
-	display: inline-block;
 }
 
 .input-title {
