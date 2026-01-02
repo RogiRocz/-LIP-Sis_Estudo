@@ -13,10 +13,34 @@
 </template>
 
 <script setup lang="ts">
+import { useAppBarStore } from '@/stores/useAppBarStore';
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+
 const props = defineProps<{
 	pageTitle: string
 	pageDescription: string
 }>()
+
+const appBarStore = useAppBarStore()
+const { nameDisplay } = storeToRefs(appBarStore)
+
+const actionsDisplayHeaderInfo = computed(() => {
+	return nameDisplay.value === 'xs' ? 'contents' : 'block'
+})
+
+const actionsFlexDirection = computed(() => {
+	return nameDisplay.value === 'xs' ? 'column' : 'row'
+})
+
+const actionsAlign = computed(() => {
+	return nameDisplay.value === 'xs' ? 'flex-end' : 'center'
+})
+
+const actionsGap = computed(() => {
+	return nameDisplay.value === 'xs' ? '2vh' : 'auto'
+})
+
 </script>
 
 <style scoped>
@@ -28,9 +52,15 @@ p {
 	color: #64748b;
 }
 
+#page-header-info {
+	display: v-bind(actionsDisplayHeaderInfo);
+}
+
 #page-header-actions {
 	display: flex;
-	align-items: center;
+	align-items: v-bind(actionsAlign);
+	gap: v-bind(actionsGap);
+	flex-direction: v-bind(actionsFlexDirection);
 	justify-content: flex-end;
 }
 
