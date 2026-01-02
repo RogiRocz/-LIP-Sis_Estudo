@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
 env_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", ".env")
+    os.path.join(os.path.dirname(__file__), "..", "..", ".env")
 )
 load_dotenv(dotenv_path=env_path)
 
