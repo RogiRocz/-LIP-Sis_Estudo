@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import ConfirmDialog from './ConfirmDialog.vue'
 import DisciplineDialog from './DisciplineDialog.vue'
+import TemaDialog from '@/components/TemaDialog.vue'
+
 import { Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { storeToRefs } from 'pinia'
@@ -143,7 +145,7 @@ async function handleDeleteDisciplina(id: number) {
 						ID: props.id_disciplina,
 						nome: props.name_disciplina,
 						descricao: props.description,
-						cor: props.color
+						cor: props.color,
 					}"
 				>
 					<template #button="activatorProps">
@@ -219,9 +221,18 @@ async function handleDeleteDisciplina(id: number) {
 				</div>
 				<v-divider></v-divider>
 				<v-card-actions class="add-theme-button-container">
-					<v-btn prepend-icon="add" color="secondary" variant="outlined" block
-						>Adicionar tema</v-btn
-					>
+					<TemaDialog :title="'Novo tema'" :subtitle="'Crie um novo tema de estudo para esta disciplina'" :whichFuncToCall="'create'">
+						<template #button="props">
+							<v-btn
+								prepend-icon="add"
+								color="secondary"
+								variant="outlined"
+								block
+								v-bind="props"
+								>Adicionar tema</v-btn
+							>
+						</template>
+					</TemaDialog>
 				</v-card-actions>
 			</div>
 		</v-expand-transition>
