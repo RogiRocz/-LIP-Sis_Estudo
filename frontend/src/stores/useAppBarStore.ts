@@ -1,11 +1,17 @@
 import { defineStore } from 'pinia'
 import { useDisplay } from 'vuetify'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export const useAppBarStore = defineStore('appBarStore', () => {
 	// State
 	const drawer = ref(false)
 	const { name: nameDisplay } = useDisplay()
+
+	// Getters
+
+	const actionsWidthDialog = computed(() => {
+		return nameDisplay.value === 'xs' ? '100%' : '75vw'
+	})
 
 	// Actions
 	function toggleDrawer() {
@@ -23,5 +29,6 @@ export const useAppBarStore = defineStore('appBarStore', () => {
 		drawer,
 		nameDisplay,
 		toggleDrawer,
+		actionsWidthDialog,
 	}
 })
