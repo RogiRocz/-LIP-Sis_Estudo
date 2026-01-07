@@ -16,7 +16,7 @@ async function getRevisoesByTema(tema_id: number) : Promise<Revisao[]>{
 
 async function createTema(disciplina_id: number, tema: Tema) {
   try {
-    const response = await api.post(`${nestedResourceUrl}/${disciplina_id}/temas`, tema)
+    const response = await api.post(`${nestedResourceUrl}/${disciplina_id}${resourceUrl}`, tema)
     return response.data
   } catch (error: any) {
     const errorMessage = error.response?.data?.detail || 'Erro ao criar o tema. Por favor, tente novamente.'
