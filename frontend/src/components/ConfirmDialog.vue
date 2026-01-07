@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAppBarStore } from '@/stores/useAppBarStore'
+import { storeToRefs } from 'pinia'
 
 const isOpen = ref(false)
 const title = ref('')
 const message = ref('')
+
+const appBarStore = useAppBarStore()
+const { actionsWidthDialog } = storeToRefs(appBarStore)
 
 let resolvePromise: (value: boolean) => void
 
@@ -24,7 +29,7 @@ defineExpose({ open })
 </script>
 
 <template>
-	<v-dialog v-model="isOpen" max-width="400" persistent>
+	<v-dialog v-model="isOpen" :max-width="actionsWidthDialog" persistent>
 		<v-card rounded="lg">
 			<v-card-title class="d-flex align-center bg-error-lighten-5 py-4">
 				<v-icon color="error" class="mr-2">delete_forever</v-icon>
