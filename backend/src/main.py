@@ -12,38 +12,6 @@ import os
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        await conn.execute(
-            text(
-                """
-            CREATE OR REPLACE FUNCTION update_revisao_status()
-            RETURNS TRIGGER AS $$
-            BEGIN
-                IF NEW.data_realizada IS NOT NULL THEN
-                    NEW.status := 'REALIZADA';
-                ELSIF NEW.data_prevista < CURRENT_DATE THEN
-                    NEW.status := 'ATRASADA';
-                ELSE
-                    NEW.status := 'PENDENTE';
-                END IF;
-                RETURN NEW;
-            END;
-            $$ LANGUAGE plpgsql;
-        """
-            )
-        )
-        await conn.execute(
-            text('DROP TRIGGER IF EXISTS trg_update_revisao_status ON "Revisao"')
-        )
-        await conn.execute(
-            text(
-                """
-            CREATE TRIGGER trg_update_revisao_status
-            BEFORE INSERT OR UPDATE ON "Revisao"
-            FOR EACH ROW
-            EXECUTE FUNCTION update_revisao_status();
-        """
-            )
-        )
     yield
 
 
@@ -54,7 +22,7 @@ async def method_override_middleware(request: Request, call_next):
     if request.method == "POST":
         method_override = request.headers.get("X-HTTP-Method-Override", "").upper()
         if method_override == "PUT":
-            request.scope["method"] = "PUT"
+            request.scope["method"] = method_override
             
     return await call_next(request)
 
