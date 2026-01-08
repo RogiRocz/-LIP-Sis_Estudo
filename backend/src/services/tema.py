@@ -24,9 +24,14 @@ class TemaService:
             )
 
         try:
-            return await self.repo.create_tema_with_revisions(
-                tema, disciplina_id, user.intervalo_revisoes
-            )
+            if tema.intervalos is not None:
+                return await self.repo.create_tema_with_revisions(
+                    tema, disciplina_id, tema.intervalos
+                )
+            else: 
+                return await self.repo.create_tema_with_revisions(
+                    tema, disciplina_id, user.intervalo_revisoes
+                )
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

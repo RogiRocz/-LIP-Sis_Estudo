@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import ConfirmDialog from './ConfirmDialog.vue'
 import DisciplineDialog from './DisciplineDialog.vue'
-import { Tema } from '@/utils/apiTypes'
+import TemaDialog from '@/components/TemaDialog.vue'
+import RevisoesDialog from '@/components/RevisoesDialog.vue'
+
+import { Revisao, Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { deleteDisciplina } from '@/api/disciplina'
+import { deleteTema } from '@/api/tema'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { useDisciplinaStore } from '@/stores/useDisciplinaStore'
+import { formatarData } from '@/utils/brDateFormat'
 
 const aprendizadoStore = useAprendizadoStore()
 const { revisoes } = storeToRefs(aprendizadoStore)
@@ -28,61 +33,52 @@ const props = defineProps<{
 	temas: Array<Tema> | null
 }>()
 
-const formatarData = (dataStr: string) => {
-	return new Date(dataStr).toLocaleDateString('pt-BR', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-	})
-}
-
-function getStatus(tema_id: number): string {
+function getStatus(tema_id: number): string[] {
 	const revisoes_tema = revisoes.value?.get(tema_id) || []
-	const hoje = new Date().setHours(0, 0, 0, 0)
 
-	if (revisoes_tema.length === 0) return 'Nenhuma revisão agendada.'
+	if (revisoes_tema.length === 0) return ['Nenhuma revisão agendada.']
 
-	const pendentes = revisoes_tema.filter((rev) => {
-		const dataRev = new Date(rev.data_prevista).getTime()
+	const realizadas = revisoes_tema.filter((r) => r.status === 'REALIZADA')
+	const atrasadas = revisoes_tema.filter((r) => r.status === 'ATRASADA')
+	const pendentes = revisoes_tema.filter((r) => r.status === 'PENDENTE')
 
-		return (
-			rev.status !== 'REALIZADA' &&
-			(rev.status === 'ATRASADA' ||
-				rev.status === 'PENDENTE' ||
-				dataRev <= hoje)
-		)
-	})
+	const ordenarPorData = (a: Revisao, b: Revisao) =>
+		new Date(a.data_prevista).getTime() - new Date(b.data_prevista).getTime()
 
-	if (pendentes.length === 0) {
-		return revisoes_tema.every((r) => r.status === 'REALIZADA')
-			? 'Todas as revisões concluídas.'
-			: 'Nenhuma revisão para hoje.'
+	atrasadas.sort(ordenarPorData)
+	pendentes.sort(ordenarPorData)
+
+	if (
+		atrasadas.length === 0 &&
+		pendentes.length === 0 &&
+		realizadas.length > 0
+	) {
+		return ['Todas as revisões concluídas.']
 	}
 
-	pendentes.sort(
-		(a, b) =>
-			new Date(a.data_prevista).getTime() - new Date(b.data_prevista).getTime(),
-	)
+	let mensagens: string[] = []
 
-	return pendentes
-		.map((rev) => {
-			const dataRev = new Date(rev.data_prevista).getTime()
-			let label = rev.status
+	atrasadas.forEach((rev) => {
+		mensagens.push(`ATRASADA: ${formatarData(rev.data_prevista)}`)
+	})
 
-			if (dataRev === hoje) label = 'HOJE'
-			else if (dataRev < hoje) label = 'ATRASADA'
+	pendentes.forEach((rev) => {
+		mensagens.push(`PENDENTE: ${formatarData(rev.data_prevista)}`)
+	})
 
-			return `${label} em ${formatarData(rev.data_prevista)}`
-		})
-		.join('\n')
+	return mensagens
 }
 
 const temasVisiveis = computed(() => {
-	if (!props.temas) return []
+	if (!props.temas || !revisoes.value) return []
 
 	return props.temas.filter((tema) => {
-		const lista = revisoes.value?.get(tema.ID) || []
-		return lista.some((r) => r.status !== 'REALIZADA')
+		const lista = revisoes.value.get(tema.ID) || []
+		const temAlgoPraFazer = lista.some(
+			(r) => r.status === 'ATRASADA' || r.status === 'PENDENTE',
+		)
+
+		return temAlgoPraFazer
 	})
 })
 
@@ -100,6 +96,33 @@ async function handleDeleteDisciplina(id: number) {
 			addMessage({ text: 'Erro ao excluir a disciplina.', color: 'error' })
 		}
 	}
+}
+
+async function handleDeleteTheme(id: number) {
+	console.log('id tema: ', id);
+
+	const confirmed = await confirmDialogRef.value?.open(
+		'Excluir Tema',
+		'Tem certeza? Todas as revisões vinculadas serão perdidas.',
+	)
+
+	if (confirmed) {
+		try {
+			await deleteTema(id)
+			addMessage({ text: 'Tema excluído com sucesso.', color: 'success' })
+		} catch (error) {
+			console.error(error);
+			addMessage({ text: 'Erro ao excluir o tema.', color: 'error' })
+		}
+	}
+	
+}
+
+const getStatusColorClass = (status: string) => {
+	if (status.includes('ATRASADA')) return 'text-error'
+	if (status.includes('REALIZADA')) return 'text-success'
+	if (status.includes('PENDENTE')) return 'text-warning'
+	return 'text-grey'
 }
 </script>
 
@@ -143,7 +166,7 @@ async function handleDeleteDisciplina(id: number) {
 						ID: props.id_disciplina,
 						nome: props.name_disciplina,
 						descricao: props.description,
-						cor: props.color
+						cor: props.color,
 					}"
 				>
 					<template #button="activatorProps">
@@ -176,52 +199,101 @@ async function handleDeleteDisciplina(id: number) {
 			<div v-show="isThemesExpanded">
 				<v-divider></v-divider>
 				<v-list v-if="temasVisiveis.length > 0" lines="two" class="theme-list">
-					<v-list-item
-						v-for="t in temasVisiveis"
-						:key="t.ID"
-						class="theme-item"
-					>
-						<v-list-item-title class="theme-name">{{
-							t.nome
-						}}</v-list-item-title>
-						<v-list-item-subtitle class="theme-card-status">{{
-							getStatus(t.ID)
-						}}</v-list-item-subtitle>
+					<template v-for="t in temasVisiveis" :key="t.ID">
+						<v-hover v-slot="{ isHovering, props }">
+							<v-list-item class="theme-item" v-bind="props">
+								<v-list-item-title class="theme-name">{{
+									t.nome
+								}}</v-list-item-title>
+								<v-list-item-subtitle
+									class="theme-card-status"
+									:class="{ 'on-hover': isHovering }"
+								>
+									<span
+										v-for="(r, i) in getStatus(t.ID)"
+										:key="i"
+										class="theme-card-status-item"
+										:class="getStatusColorClass(r)"
+									>
+										{{ r }}
+									</span>
+								</v-list-item-subtitle>
 
-						<template #append>
-							<div v-show="!isEditing">
-								<v-btn
-									icon="play_arrow"
-									variant="text"
-									size="small"
-									@click.stop
-								></v-btn>
-								<v-btn
-									icon="delete"
-									variant="text"
-									size="small"
-									@click.stop
-								></v-btn>
-							</div>
-							<div v-show="isEditing">
-								<v-btn
-									icon="edit_square"
-									variant="text"
-									size="small"
-									@click.stop
-								></v-btn>
-							</div>
-						</template>
-					</v-list-item>
+								<template #append>
+									<RevisoesDialog :tema="t" :revisoes="revisoes.get(t.ID)">
+										<template #button="activatorProps">
+											<v-btn
+												v-show="!isEditing"
+												v-bind="activatorProps"
+												icon="play_arrow"
+												variant="text"
+												size="small"
+												@click.stop
+											></v-btn>
+										</template>
+									</RevisoesDialog>
+
+									<div v-show="isEditing">
+										<TemaDialog
+											:title="'Editar Tema'"
+											:subtitle="'Preencha com as novas informações do tema'"
+											:whichFuncToCall="'update'"
+											:initialData="{
+												id_disciplina: t.disciplina_id,
+												ID: t.ID,
+												nome: t.nome,
+												descricao: t.descricao,
+												revisoes: revisoes?.get(t.ID),
+											}"
+										>
+											<template #button="activatorProps">
+												<v-btn
+													icon="edit_square"
+													variant="text"
+													size="small"
+													@click.stop
+													v-bind="activatorProps"
+												></v-btn>
+											</template>
+										</TemaDialog>
+									</div>
+									<div v-show="isEditing">
+										<v-btn
+											icon="delete"
+											variant="text"
+											size="small"
+											@click.stop="handleDeleteTheme(t.ID)"
+										></v-btn>
+									</div>
+								</template>
+							</v-list-item>
+						</v-hover>
+					</template>
 				</v-list>
 				<div v-else class="no-themes-message">
 					<p>Nenhum tema com revisões agendadas para esta disciplina.</p>
 				</div>
 				<v-divider></v-divider>
 				<v-card-actions class="add-theme-button-container">
-					<v-btn prepend-icon="add" color="secondary" variant="outlined" block
-						>Adicionar tema</v-btn
+					<TemaDialog
+						:title="'Novo tema'"
+						:subtitle="'Crie um novo tema de estudo para esta disciplina'"
+						:whichFuncToCall="'create'"
+						:initialData="{
+							id_disciplina: props.id_disciplina,
+						}"
 					>
+						<template #button="props">
+							<v-btn
+								prepend-icon="add"
+								color="secondary"
+								variant="outlined"
+								block
+								v-bind="props"
+								>Adicionar tema</v-btn
+							>
+						</template>
+					</TemaDialog>
 				</v-card-actions>
 			</div>
 		</v-expand-transition>
@@ -254,7 +326,7 @@ async function handleDeleteDisciplina(id: number) {
 }
 
 .expand-icon {
-	transition: transform 0.2s ease;
+	transition: transform 0.2s ease 1s;
 }
 
 .theme-list {
@@ -272,15 +344,30 @@ async function handleDeleteDisciplina(id: number) {
 .theme-name {
 	font-size: 0.9rem;
 	white-space: normal;
-	display: -webkit-box;
-	line-clamp: 1;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
 }
 
 .theme-card-status {
 	font-size: 0.75rem;
 	white-space: pre-line;
+	overflow: hidden;
+	max-height: 2rem;
+	opacity: 0.7;
+
+	transition:
+		max-height 0.5s ease-in-out,
+		opacity 0.3s ease;
+}
+
+.theme-card-status.on-hover {
+	display: block;
+	-webkit-line-clamp: none;
+	line-clamp: none;
+	max-height: 100%;
+	opacity: 0.8;
+}
+
+.theme-card-status-item {
+	display: block;
 }
 
 .no-themes-message {

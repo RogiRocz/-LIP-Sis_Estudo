@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, Response
 from ..schemas.revisao import Revisao, RevisaoUpdate
 from ..schemas.pagination import Page
 from ..models.user import User as UserModel
@@ -42,3 +42,12 @@ async def get_cronograma(
 @router.put("/{revisao_id}/reagendar", response_model=Revisao)
 async def reagendar_revisao(revisao_id: int, nova_data: date, user: UserModel = Depends(get_current_user), service: RevisaoService = Depends()):
     return await service.reagendar_revisao(revisao_id, nova_data, user.ID)
+
+@router.delete("/{revisao_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_revisao(
+    revisao_id: int,
+    user: UserModel = Depends(get_current_user),
+    service: RevisaoService = Depends(),
+):
+    await service.delete_revisao(revisao_id, user.ID)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

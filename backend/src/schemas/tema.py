@@ -7,10 +7,11 @@ class TemaBase(BaseModel):
     descricao: Optional[str] = None
 
 class TemaCreate(TemaBase):
-    pass
+    intervalos: Optional[list[int]] = None
 
 class TemaUpdate(TemaBase):
     pass
+    intervalos: Optional[list[int]] = None
 
 class Tema(TemaBase):
     ID: int

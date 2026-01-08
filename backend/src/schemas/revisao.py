@@ -9,12 +9,8 @@ class RevisaoBase(BaseModel):
     status: str = 'PENDENTE'
     descricao: Optional[str] = None
 
-class RevisaoUpdate(BaseModel):
-    data_prevista: Optional[date] = None
-    data_realizada: Optional[datetime] = None
-    tempo_dedicado: Optional[int] = None
-    status: Optional[str] = None
-    descricao: Optional[str] = None
+class RevisaoUpdate(RevisaoBase):
+    pass
 
 class Revisao(RevisaoBase):
     ID: int

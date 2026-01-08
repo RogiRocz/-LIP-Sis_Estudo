@@ -13,4 +13,4 @@ class Disciplina(Base, TimestampMixin):
     usuario_id = Column(Integer, ForeignKey("Usuario.ID", ondelete="CASCADE"), nullable=False)
 
     usuario = relationship("User", back_populates="disciplinas")
-    temas = relationship("Tema", back_populates="disciplina")
+    temas = relationship("Tema", back_populates="disciplina", cascade="all, delete-orphan")

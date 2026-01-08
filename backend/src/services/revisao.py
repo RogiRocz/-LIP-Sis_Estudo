@@ -120,3 +120,8 @@ class RevisaoService:
             db_revisao.status = "PENDENTE"
 
         return await self.repo.update_revisao(db_revisao)
+
+    async def delete_revisao(self, revisao_id: int, user_id: int):
+        db_revisao = await self._get_revisao_and_validate_ownership(revisao_id, user_id)
+        await self.repo.delete_revisao(db_revisao)
+        return

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class UserBase(BaseModel):
@@ -19,11 +19,11 @@ class UserUpdate(BaseModel):
     senha_atual: Optional[str] = None
     nova_senha: Optional[str] = None
     ui_theme: Optional[str] = None
-    intervalo_revisoes: Optional[str] = None
+    intervalo_revisoes: Optional[List[int]] = None
 
 class User(UserBase):
     ui_theme: str
-    intervalo_revisoes: str    
+    intervalo_revisoes: List[int]
 
     class Config:
         from_attributes = True

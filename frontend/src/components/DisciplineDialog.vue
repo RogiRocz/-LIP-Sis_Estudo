@@ -19,11 +19,7 @@ const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
 
 const appBarStore = useAppBarStore()
-const { nameDisplay } = storeToRefs(appBarStore)
-
-const actionsWidthDialog = computed(() => {
-	return nameDisplay.value === 'xs' ? '100%' : '50vw'
-})
+const { actionsWidthDialog } = storeToRefs(appBarStore)
 
 
 const props = defineProps<{
@@ -62,6 +58,7 @@ async function handleClick() {
 				cor: cor.value,
 				descricao: descricao.value,
 			})
+			addMessage({ text: 'Disciplina criada com sucesso', color: 'success' })
 		} else if (props.whichFuncToCall === 'update') {
 			const idDisciplina = id.value
 
