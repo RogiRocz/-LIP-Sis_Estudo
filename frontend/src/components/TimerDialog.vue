@@ -5,9 +5,12 @@ import { computed, ref, watch, onUnmounted } from 'vue'
 import { useTimerStore } from '@/stores/useTimerStore'
 import { storeToRefs } from 'pinia'
 import { concluirRevisao } from '@/api/revisao'
+import { useSnackbarStore } from '@/stores/useSnackbarStore'
 
 const timerStore = useTimerStore()
 const { revisao, tema } = storeToRefs(timerStore)
+
+const snackbarStore = useSnackbarStore()
 
 const dialog = ref(false)
 const lengthInput = ref(1)
@@ -108,6 +111,14 @@ const stopTimer = () => {
 
 const registrarTempoDedicado = async () => {
 	if (tempoDedicadoMinutos.value) {
+		if (!revisao.value) {
+			snackbarStore.addMessage({
+				text: 'Erro ao registrar seu tempo dedicado',
+				color: 'warning',
+			})
+			return
+		}
+
 		const revisaoAtualizada = {
 			...revisao.value,
 			tempo_dedicado: tempoDedicadoMinutos.value,
@@ -119,6 +130,11 @@ const registrarTempoDedicado = async () => {
 		)
 
 		timerStore.setRevisao(novaRevisao)
+	} else {
+		snackbarStore.addMessage({
+			text: 'Você não registrou nenhum tempo dedicado',
+			color: 'warning',
+		})
 	}
 }
 
@@ -149,10 +165,10 @@ const fechaDialogo = () => {
 }
 
 const open = () => {
-  dialog.value = true;
-};
+	dialog.value = true
+}
 
-defineExpose({ open });
+defineExpose({ open })
 
 onUnmounted(() => {
 	clearInterval(timerInterval)
@@ -168,13 +184,13 @@ onUnmounted(() => {
 
 		<v-card
 			variant="flat"
-			color="card"
+			color="secondary"
 			class="pa-4 d-flex flex-column align-center justify-center"
 		>
-      <div v-if="tema" class="text-center mb-4">
-        <h2 class="text-h5">{{ tema.nome }}</h2>
-        <p class="text-subtitle-1">{{ tema.descricao }}</p>
-      </div>
+			<div v-if="tema" class="text-center mb-4">
+				<h2 class="text-h5">{{ tema.nome }}</h2>
+				<p class="text-subtitle-1">{{ tema.descricao }}</p>
+			</div>
 
 			<v-card-title class="text-h5 mb-4">
 				{{
@@ -188,6 +204,7 @@ onUnmounted(() => {
 				<template v-if="choose === 'selecting_time'">
 					<v-row justify="center" align="center" class="time-selector mb-6">
 						<v-text-field
+							bg-color="primary"
 							v-show="lengthInput === 2"
 							v-model="hours"
 							disabled
@@ -202,6 +219,7 @@ onUnmounted(() => {
 						<span v-show="lengthInput === 2" class="mx-2 text-h6">:</span>
 
 						<v-text-field
+							bg-color="primary"
 							v-model="minutes"
 							disabled
 							variant="outlined"
@@ -214,30 +232,34 @@ onUnmounted(() => {
 
 					<v-row justify="center" class="gap-2">
 						<v-btn
+							variant="outlined"
 							icon="remove"
 							class="mx-1"
-							color="secondary"
+							color="on-secondary"
 							@click="alterTime(-15)"
 							>-15</v-btn
 						>
 						<v-btn
+							variant="outlined"
 							icon="remove"
 							class="mx-1"
-							color="secondary"
+							color="on-secondary"
 							@click="alterTime(-5)"
 							>-5</v-btn
 						>
 						<v-btn
+							variant="outlined"
 							icon="add"
 							class="mx-1"
-							color="secondary"
+							color="on-secondary"
 							@click="alterTime(5)"
 							>+5</v-btn
 						>
 						<v-btn
+							variant="outlined"
 							icon="add"
 							class="mx-1"
-							color="secondary"
+							color="on-secondary"
 							@click="alterTime(15)"
 							>+15</v-btn
 						>
@@ -249,7 +271,7 @@ onUnmounted(() => {
 						:model-value="progressValue"
 						:size="250"
 						:width="15"
-						color="primary"
+						color="on-secondary"
 						rotate="0"
 					>
 						<div class="text-center">
@@ -274,15 +296,15 @@ onUnmounted(() => {
 				<v-spacer></v-spacer>
 				<v-btn
 					v-if="choose === 'selecting_time'"
-					color="primary"
-					variant="elevated"
+					color="white"
+					variant="outlined"
 					@click="comecarEstudar"
 					>Continuar</v-btn
 				>
 				<v-btn
 					v-if="choose === 'timer'"
 					color="error"
-					variant="tonal"
+					variant="elevated"
 					@click="finalizarEstudo"
 					>Cancelar</v-btn
 				>
@@ -290,7 +312,7 @@ onUnmounted(() => {
 				<v-btn
 					v-if="choose === 'timer' && !isPaused"
 					color="warning"
-					variant="tonal"
+					variant="elevated"
 					@click="isPaused = true"
 				>
 					Pausar
