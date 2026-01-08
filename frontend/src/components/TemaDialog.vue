@@ -44,7 +44,7 @@ function calcDays(r: Revisao) {
 watch(
 	() => dialog.value,
 	(isOpen) => {
-		if(!isOpen) return
+		if (!isOpen) return
 
 		if (isOpen && props.whichFuncToCall === 'update' && props.initialData) {
 			nome.value = props.initialData.nome
@@ -57,11 +57,13 @@ watch(
 				intervalo.value = revisoes
 					.filter((r) => r.status !== 'REALIZADA')
 					.map((r) => calcDays(r))
+
+				intervalo.value.sort((a, b) => a - b)
 			}
 		} else {
 			id_disciplina.value = props.initialData.id_disciplina
 			nome.value = ''
-            descricao.value = ''
+			descricao.value = ''
 		}
 	},
 )
@@ -77,14 +79,14 @@ async function handleClick() {
 			return
 		}
 
-		const payload = {
+		const payload: any = {
 			nome: nome.value,
 			descricao: descricao.value,
 			disciplina_id: id_disciplina.value,
 			intervalos: intervalo.value,
-		}		
+		}
 
-		if (props.whichFuncToCall === 'create') {			
+		if (props.whichFuncToCall === 'create') {
 			const response = await createTema(id_disciplina.value, payload)
 			addMessage({ text: 'Tema criado com sucesso', color: 'success' })
 		} else if (props.whichFuncToCall === 'update') {
@@ -94,7 +96,7 @@ async function handleClick() {
 
 		nome.value = ''
 		descricao.value = ''
-		// intervalo.value = null
+
 		form.value.reset()
 		dialog.value = false
 	} catch (error) {
