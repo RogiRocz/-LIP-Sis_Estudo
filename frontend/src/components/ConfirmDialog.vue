@@ -31,8 +31,8 @@ defineExpose({ open })
 </script>
 
 <template>
-	<v-dialog v-model="isOpen" :max-width="actionsWidthDialog" persistent>
-		<v-card rounded="lg">
+	<v-dialog v-model="isOpen" :max-width="actionsWidthDialog" persistent scrim="primary">
+		<v-card rounded="lg" color="card">
 			<v-card-title class="d-flex align-center bg-error-lighten-5 py-4">
 				<v-icon color="error" class="mr-2">{{ icon }}</v-icon>
 				<span class="text-error font-weight-bold">{{ title }}</span>
@@ -47,7 +47,7 @@ defineExpose({ open })
 			<v-card-actions class="pa-4">
 				<v-spacer></v-spacer>
 				<v-btn
-					variant="text"
+					variant="outlined"
 					color="grey-darken-1"
 					@click="resolvePromise(false)"
 				>

@@ -11,7 +11,7 @@ import {aliases, md} from 'vuetify/iconsets/md'
  * gradient_end: 764ba2 (Roxo Mais Escuro - Para o App Bar)
  */
 const StudyFlowTheme = {
-	defaultTheme: 'light',
+	defaultTheme: 'dark',
 
 	themes: {
 		dark: {
@@ -19,13 +19,13 @@ const StudyFlowTheme = {
 			colors: {
 				background: '121212',
 				surface: '1E1E1E',
-				primary: '17a2b8',
+				primary: 'A18CD1',
 				secondary: '667eea',
 				card: '2d3748',
 				error: 'EF4444',
 				info: '17a2b8',
-				success: '10B981',
-				warning: 'FBBF24',
+				success: '48BB78',
+				warning: 'F687B3',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
@@ -39,9 +39,13 @@ const StudyFlowTheme = {
 			colors: {
 				background: 'fff',
 				surface: '1E1E1E',
-				primary: '17a2b8',
+				primary: 'A18CD1',
 				secondary: '667eea',
 				card: 'f0f4f8',
+				error: 'EF4444',
+				info: '17a2b8',
+				success: 'FFD700',
+				warning: 'F687B3',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
