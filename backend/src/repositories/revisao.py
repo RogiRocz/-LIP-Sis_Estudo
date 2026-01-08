@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from ..models.revisao import Revisao as RevisaoModel
 from ..models.tema import Tema as TemaModel
 from ..models.disciplina import Disciplina as DisciplinaModel
@@ -64,3 +64,8 @@ class RevisaoRepository:
         await self.db.commit()
         await self.db.refresh(db_revisao)
         return db_revisao
+
+    async def delete_revisao(self, db_revisao: RevisaoModel) -> None:
+        await self.db.delete(db_revisao)
+        await self.db.commit()
+        return
