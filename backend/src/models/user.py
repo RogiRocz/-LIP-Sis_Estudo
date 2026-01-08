@@ -15,4 +15,4 @@ class User(Base, TimestampMixin):
     intervalo_revisoes = Column(ARRAY(Integer), default=[1, 7, 14])
     supabase_id = Column(UUID(as_uuid=True), unique=True, nullable=True)
         
-    disciplinas = relationship("Disciplina", back_populates="usuario")
+    disciplinas = relationship("Disciplina", back_populates="usuario", cascade="all, delete-orphan")

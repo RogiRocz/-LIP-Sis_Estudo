@@ -12,4 +12,4 @@ class Tema(Base, TimestampMixin):
     disciplina_id = Column(Integer, ForeignKey("Disciplina.ID", ondelete="CASCADE"), nullable=False)
 
     disciplina = relationship("Disciplina", back_populates="temas")
-    revisoes = relationship("Revisao", back_populates="tema")
+    revisoes = relationship("Revisao", back_populates="tema", cascade="all, delete-orphan")
