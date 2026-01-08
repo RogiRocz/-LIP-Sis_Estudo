@@ -1,11 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from ..models.tema import Tema as TemaModel
 from ..models.disciplina import Disciplina as DisciplinaModel
 from ..models.revisao import Revisao as RevisaoModel
 from ..schemas.tema import TemaCreate, TemaUpdate
 from typing import List, Tuple
-from datetime import date, timedelta
+from datetime import datetime, timedelta
+from ..core.config import settings
+import pytz
 
 
 class TemaRepository:
@@ -25,15 +27,22 @@ class TemaRepository:
     async def create_tema_with_revisions(
         self, tema: TemaCreate, disciplina_id: int, intervals: list[int]
     ) -> TemaModel:
-        db_tema = TemaModel(**tema.model_dump(exclude={'intervalos'}), disciplina_id=disciplina_id)
+        tema_data = tema.model_dump(exclude={'intervalos'})
+        db_tema = TemaModel(**tema_data, disciplina_id=disciplina_id)
         self.db.add(db_tema)
 
         try:
-            await self.db.flush()  # Get the ID of the new tema
+            await self.db.flush()
+        
+            utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+            local_tz = pytz.timezone(settings.DEFAULT_TIMEZONE)
+            local_now = utc_now.astimezone(local_tz)
+            start_date = local_now.date()
+
             for day in intervals:
                 revisao = RevisaoModel(
                     tema_id=db_tema.ID,
-                    data_prevista=date.today() + timedelta(days=day),
+                    data_prevista=start_date + timedelta(days=day),
                 )
                 self.db.add(revisao)
             await self.db.commit()
@@ -47,7 +56,6 @@ class TemaRepository:
     async def get_paginated_temas_by_disciplina_id(
         self, disciplina_id: int, skip: int, limit: int
     ) -> Tuple[List[TemaModel], int]:
-        """Busca temas paginados por disciplina e a contagem total."""
         count_query = (
             select(func.count())
             .select_from(TemaModel)
@@ -58,12 +66,12 @@ class TemaRepository:
         query = (
         select(TemaModel)
         .where(TemaModel.disciplina_id == disciplina_id)
-        .order_by(TemaModel.ID.desc()) # Pega os mais recentes primeiro
+        .order_by(TemaModel.ID.desc()) 
         .offset(skip)
         .limit(limit)
         )
         result = await self.db.execute(query)
-        # O unique() é essencial para evitar duplicados em joins
+        
         temas = result.scalars().unique().all()
         
         return temas, total
@@ -88,7 +96,7 @@ class TemaRepository:
 
             if tema_update.intervalos is not None:
                 stmt = delete(RevisaoModel).where(
-                    RevisaoModel.tema_id == db_tema.ID, RevisaoModel.status == "PENDENTE"
+                    RevisaoModel.tema_id == db_tema.ID, RevisaoModel.status.in_(["PENDENTE", "ATRASADA"])
                 )
                 await self.db.execute(stmt)
 
