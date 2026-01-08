@@ -200,7 +200,7 @@ onMounted(async () => {
 						:class="isEditing ? 'bg-error' : 'botao-gradient'"
 						@click="isEditing = !isEditing"
 					>
-						{{ isEditing ? 'Cancelar Edição' : 'Editar disciplinas' }}
+						{{ isEditing ? 'Cancelar Edição' : 'Modo Edição' }}
 					</v-btn>
 					<DisciplineDialog :title="'Nova disciplina'" :subtitle="'Crie uma nova disciplina para organizar seus estudos'" :whichFuncToCall="'create'">
 						<template #button="props">
