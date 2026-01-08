@@ -7,17 +7,18 @@ const resourceUrl = '/revisoes'
 async function getRevisoes(p?: PageParams) {
   try {
     const response = await api.get(resourceUrl, {
-      params: {
-        page: p?.page,
-        size: p?.size
-      }
-    })
+     params: {
+       page: p?.page,
+       size: p?.size
+     }
+   })
     return response.data
   } catch (error: any) {
     const errorMessage = error.response?.data?.detail || 'Erro ao buscar as revisões. Por favor, tente novamente.'
     throw new Error(errorMessage)
   }
 }
+
 
 async function updateRevisao(id: number, revisao: Revisao) {
   try {
@@ -28,6 +29,7 @@ async function updateRevisao(id: number, revisao: Revisao) {
     throw new Error(errorMessage)
   }
 }
+
 
 async function concluirRevisao(id: number, revisao: Revisao) {
   try {
@@ -54,14 +56,26 @@ async function getCronograma(p?: PageParams) {
   }
 }
 
-async function reagendarRevisao(id: number, nova_data: Date) {
+async function reagendarRevisao(id: number, nova_data: string) {
   try {
-    const response = await api.put(`${resourceUrl}/${id}/reagendar`, {
-		nova_data: nova_data
-	})
+    const response = await api.put(`${resourceUrl}/${id}/reagendar`, null, {
+      params: {
+        nova_data: nova_data
+      }
+    });
+    return response.data;
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.detail || 'Erro ao reagendar a revisão. Por favor, tente novamente.';
+    throw new Error(errorMessage);
+  }
+}
+
+async function deleteRevisao(id: number) {
+  try {
+    const response = await api.delete(`${resourceUrl}/${id}`)
     return response.data
   } catch (error: any) {
-    const errorMessage = error.response?.data?.detail || 'Erro ao reagendar a revisão. Por favor, tente novamente.'
+    const errorMessage = error.response?.data?.detail || 'Erro ao excluir a revisão. Por favor, tente novamente.'
     throw new Error(errorMessage)
   }
 }
@@ -71,5 +85,6 @@ export {
   updateRevisao,
   concluirRevisao,
   getCronograma,
-  reagendarRevisao
+  reagendarRevisao,
+  deleteRevisao
 }
