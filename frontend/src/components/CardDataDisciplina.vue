@@ -2,7 +2,7 @@
 import ConfirmDialog from './ConfirmDialog.vue'
 import DisciplineDialog from './DisciplineDialog.vue'
 import TemaDialog from '@/components/TemaDialog.vue'
-import ChooseStudyDialog from '@/components/ChooseStudyDialog.vue'
+import RevisoesDialog from '@/components/RevisoesDialog.vue'
 
 import { Revisao, Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
@@ -220,7 +220,7 @@ const getStatusColorClass = (status: string) => {
 								</v-list-item-subtitle>
 
 								<template #append>
-									<ChooseStudyDialog :tema="t" :revisoes="revisoes.get(t.ID)">
+									<RevisoesDialog :tema="t" :revisoes="revisoes.get(t.ID)">
 										<template #button="activatorProps">
 											<v-btn
 												v-show="!isEditing"
@@ -231,7 +231,7 @@ const getStatusColorClass = (status: string) => {
 												@click.stop
 											></v-btn>
 										</template>
-									</ChooseStudyDialog>
+									</RevisoesDialog>
 
 									<div v-show="isEditing">
 										<TemaDialog
