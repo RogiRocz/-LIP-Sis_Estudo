@@ -3,6 +3,7 @@ import { Disciplina, Revisao, Tema } from '@/utils/apiTypes'
 import { syncArray, syncMap } from '@/utils/SyncSupabase'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { useUserStore } from './useUserStore'
 
 export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	const disciplinas = ref<Disciplina[] | null>([])
@@ -36,9 +37,12 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	}
 
 	const setupRealtime = async () => {
-		await supabase.removeAllChannels()
+		if (activeChannel) {
+			await supabase.removeChannel(activeChannel)
+			activeChannel = null
+		}
 
-		const channel = supabase
+		activeChannel = supabase
 			.channel('db-public-changes')
 			.on(
 				'postgres_changes',
@@ -62,11 +66,15 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 				},
 			)
 			.subscribe((status, err) => {
-				// console.log('Status do Canal:', status)
-				// console.error('Erro no Canal:', err)
+				console.log('Status do Canal:', status)
+				if (status === 'CLOSED' || status === 'TIMED_OUT') {
+					console.log('Canal fechado ou temporariamente fora do ar.')
+				} else if (err) {
+					console.error('Erro ao se conectar ao canal:', err)
+				}
 			})
 
-		return channel
+		return activeChannel
 	}
 
 	return {
@@ -83,3 +91,12 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		setupRealtime,
 	}
 })
+
+let activeChannel: any = null
+
+if (import.meta.hot) {
+	import.meta.hot.dispose(async () => {
+		await supabase.removeAllChannels()
+		console.log('HMR: Canais do Supabase limpos para evitar duplicidade.')
+	})
+}

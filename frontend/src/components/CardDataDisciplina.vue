@@ -6,6 +6,7 @@ import RevisoesDialog from '@/components/RevisoesDialog.vue'
 
 import { Revisao, Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
+import { useUserStore } from '@/stores/useUserStore'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { deleteDisciplina } from '@/api/disciplina'
@@ -13,6 +14,7 @@ import { deleteTema } from '@/api/tema'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { useDisciplinaStore } from '@/stores/useDisciplinaStore'
 import { formatarData } from '@/utils/brDateFormat'
+import { useTheme } from 'vuetify'
 
 const aprendizadoStore = useAprendizadoStore()
 const { revisoes } = storeToRefs(aprendizadoStore)
@@ -20,6 +22,10 @@ const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
 const disciplinaStore = useDisciplinaStore()
 const { isEditing } = storeToRefs(disciplinaStore)
+const userStore = useUserStore()
+const { isDarkTheme } = storeToRefs(userStore)
+
+const theme = useTheme()
 
 const isThemesExpanded = ref(false)
 const confirmDialogRef = ref<InstanceType<typeof ConfirmDialog> | null>(null)
@@ -82,6 +88,12 @@ const temasVisiveis = computed(() => {
 	})
 })
 
+const cardColor = computed(() => {
+	return isDarkTheme.value
+		? '#' + theme.global.current.value.colors.primary
+		: '#' + theme.global.current.value.colors.secondary
+})
+
 async function handleDeleteDisciplina(id: number) {
 	const confirmed = await confirmDialogRef.value?.open(
 		'Excluir Disciplina',
@@ -99,7 +111,7 @@ async function handleDeleteDisciplina(id: number) {
 }
 
 async function handleDeleteTheme(id: number) {
-	console.log('id tema: ', id);
+	console.log('id tema: ', id)
 
 	const confirmed = await confirmDialogRef.value?.open(
 		'Excluir Tema',
@@ -111,17 +123,16 @@ async function handleDeleteTheme(id: number) {
 			await deleteTema(id)
 			addMessage({ text: 'Tema excluído com sucesso.', color: 'success' })
 		} catch (error) {
-			console.error(error);
+			console.error(error)
 			addMessage({ text: 'Erro ao excluir o tema.', color: 'error' })
 		}
 	}
-	
 }
 
 const getStatusColorClass = (status: string) => {
-	if (status.includes('ATRASADA')) return 'text-error'
+	if (status.includes('ATRASADA')) return 'text-red-accent-4'
 	if (status.includes('REALIZADA')) return 'text-success'
-	if (status.includes('PENDENTE')) return 'text-warning'
+	if (status.includes('PENDENTE')) return 'text-purple-darken-3'
 	return 'text-grey'
 }
 </script>
@@ -191,6 +202,7 @@ const getStatusColorClass = (status: string) => {
 					:icon="isThemesExpanded ? 'expand_less' : 'expand_more'"
 					size="small"
 					class="expand-icon"
+					color="inherit"
 				></v-icon>
 			</template>
 		</v-card-item>
@@ -286,7 +298,7 @@ const getStatusColorClass = (status: string) => {
 						<template #button="props">
 							<v-btn
 								prepend-icon="add"
-								color="secondary"
+								color="inherit"
 								variant="outlined"
 								block
 								v-bind="props"
@@ -305,24 +317,26 @@ const getStatusColorClass = (status: string) => {
 .card-main {
 	margin: 10px;
 	border-radius: 12px;
-	background-color: rgb(var(--v-theme-surface));
+	background-color: v-bind(cardColor) !important;
 	color: rgb(var(--v-theme-on-surface));
 }
 
 .discipline-card-header {
 	cursor: pointer;
 	min-height: 90px;
+	background-color: inherit;
 }
 
 .discipline-name {
 	font-size: 1rem;
 	font-weight: 500;
 	white-space: normal;
+	color: rgb(var(--v-theme-on-surface));
 }
 
 .theme-count {
 	font-size: 0.8rem;
-	color: rgb(var(--v-theme-primary));
+	color: rgb(var(--v-theme-on-surface));
 }
 
 .expand-icon {
@@ -330,7 +344,7 @@ const getStatusColorClass = (status: string) => {
 }
 
 .theme-list {
-	background-color: transparent;
+	background-color: inherit;
 }
 
 .theme-item {
@@ -381,6 +395,7 @@ const getStatusColorClass = (status: string) => {
 	padding: 8px 16px;
 	display: flex;
 	justify-content: center;
+	background-color: inherit;
 }
 
 .add-theme-button-container .v-btn {
