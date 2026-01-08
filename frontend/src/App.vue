@@ -9,6 +9,8 @@ import { watch, onMounted, ref } from 'vue'
 import { useAprendizadoStore } from './stores/useAprendizadoStore'
 import { supabase } from './config/supabase'
 
+let isRealtimeStarted = false;
+
 const userStore = useUserStore()
 const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
 const { fetchUser } = userStore
@@ -40,17 +42,24 @@ onMounted(async () => {
 	})
 
 	supabase.auth.onAuthStateChange(async (event, session) => {
-		if (session) {
-			await fetchUser()
-			await useAprendizadoStore().setupRealtime()
-		}
+		console.log('Supabase session: ', session)
+		console.log(`Supabase Auth Event: ${event}`)
 	})
 
 	if (isAuthenticated.value) {
 		await fetchUser()
-		useAprendizadoStore().setupRealtime()
 	}
 })
+
+watch(isAuthenticated, (val) => {
+    if (val && !isRealtimeStarted) {
+        isRealtimeStarted = true;
+        useAprendizadoStore().setupRealtime();
+    } else if (!val) {
+        isRealtimeStarted = false;
+        supabase.removeAllChannels();
+    }
+}, { immediate: true });
 </script>
 
 <template>
