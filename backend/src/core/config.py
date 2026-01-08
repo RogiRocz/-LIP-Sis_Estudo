@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     DEFAULT_THEME: str = "claro"
     DEFAULT_REVISION_INTERVAL: list[int] = [1, 7, 14]
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
 
 
 settings = Settings()
