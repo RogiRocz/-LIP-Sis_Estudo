@@ -7,8 +7,9 @@ import ChooseStudyDialog from '@/components/ChooseStudyDialog.vue'
 import { Revisao, Tema } from '@/utils/apiTypes'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { deleteDisciplina } from '@/api/disciplina'
+import { deleteTema } from '@/api/tema'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { useDisciplinaStore } from '@/stores/useDisciplinaStore'
 import { formatarData } from '@/utils/brDateFormat'
@@ -95,6 +96,26 @@ async function handleDeleteDisciplina(id: number) {
 			addMessage({ text: 'Erro ao excluir a disciplina.', color: 'error' })
 		}
 	}
+}
+
+async function handleDeleteTheme(id: number) {
+	console.log('id tema: ', id);
+
+	const confirmed = await confirmDialogRef.value?.open(
+		'Excluir Tema',
+		'Tem certeza? Todas as revisões vinculadas serão perdidas.',
+	)
+
+	if (confirmed) {
+		try {
+			await deleteTema(id)
+			addMessage({ text: 'Tema excluído com sucesso.', color: 'success' })
+		} catch (error) {
+			console.error(error);
+			addMessage({ text: 'Erro ao excluir o tema.', color: 'error' })
+		}
+	}
+	
 }
 
 const getStatusColorClass = (status: string) => {
@@ -241,7 +262,7 @@ const getStatusColorClass = (status: string) => {
 											icon="delete"
 											variant="text"
 											size="small"
-											@click.stop
+											@click.stop="handleDeleteTheme(t.ID)"
 										></v-btn>
 									</div>
 								</template>
