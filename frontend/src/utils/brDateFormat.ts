@@ -1,9 +1,12 @@
 export const formatarData = (dataStr: string) => {
-	const dateForm = new Date(dataStr).toLocaleDateString('pt-BR', {
-		timeZone: 'America/Sao_Paulo',
-		day: '2-digit',
-		month: '2-digit',
+	const date = new Date(dataStr)
+
+	const options: Intl.DateTimeFormatOptions = {
 		year: 'numeric',
-	})
-	return dateForm
+		month: '2-digit',
+		day: '2-digit',
+		timeZone: 'UTC',
+	}
+
+	return date.toLocaleDateString('pt-BR', options)
 }
