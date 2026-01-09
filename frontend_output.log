@@ -3,9 +3,8 @@
 > vite --force
 
 7:04:28 PM [vite] (client) Forced re-optimization of dependencies
-Port 5174 is in use, trying another one...
-
-  VITE v6.4.1  ready in 1081 ms
-
-  ➜  Local:   http://localhost:5175/
-  ➜  Network: use --host to expose
+Port 5174 is in use, trying another7:29:27 PM [vite] (client) hmr update /src/App.vue
+7:29:27 PM [vite] (client) page reload src/config/vuetify.ts
+7:29:27 PM [vite] (client) hmr update /src/App.vue
+7:29:27 PM [vite] (client) page reload src/stores/useUserStore.ts
+7:29:27 PM [vite] (client) hmr update /src/App.vue
