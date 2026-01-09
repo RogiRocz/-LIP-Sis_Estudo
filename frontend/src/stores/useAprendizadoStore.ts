@@ -3,15 +3,23 @@ import { Disciplina, Revisao, Tema } from '@/utils/apiTypes'
 import { syncArray, syncMap } from '@/utils/SyncSupabase'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { useUserStore } from './useUserStore'
 
 export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	const disciplinas = ref<Disciplina[] | null>([])
 	const temas = ref<Map<number, Tema[]> | null>(new Map())
 	const revisoes = ref<Map<number, Revisao[]> | null>(new Map())
+
+	const currPage = ref(1)
+	const itensPerPage = ref(12)
+	const totalItems = ref(0)
 	const loading = ref(true)
 
 	const disciplinas_quantity = computed(() => disciplinas.value?.length || 0)
+
+	const totalPages = computed(() => {
+		const pages = Math.ceil(totalItems.value / itensPerPage.value)
+		return pages > 0 ? pages : 1
+	})
 
 	const temas_quantity = (disciplina_id: number) => {
 		const temasDaDisciplina = temas.value?.get(disciplina_id)
@@ -28,6 +36,18 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 
 	const setRevisoes = (data: Map<number, Revisao[]> | null) => {
 		revisoes.value = data
+	}
+
+	const setPage = (page: number, itens: number) => {
+		if (
+			page > 0 &&
+			itens > 0 &&
+			page <= totalPages.value &&
+			itens <= itensPerPage.value
+		) {
+			currPage.value = page
+			itensPerPage.value = itens
+		}
 	}
 
 	const reset = () => {
@@ -49,6 +69,12 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 				{ event: '*', schema: 'public', table: 'Disciplina' },
 				(payload) => {
 					disciplinas.value = syncArray(disciplinas.value, payload)
+
+					if (payload.eventType === 'INSERT') {
+						totalItems.value++
+					} else if (payload.eventType === 'DELETE') {
+						totalItems.value--
+					}
 				},
 			)
 			.on(
@@ -81,6 +107,9 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		disciplinas,
 		temas,
 		revisoes,
+		currPage,
+		itensPerPage,
+		totalItems,
 		loading,
 		disciplinas_quantity,
 		temas_quantity,
@@ -89,6 +118,8 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		setRevisoes,
 		reset,
 		setupRealtime,
+		setPage,
+		totalPages,
 	}
 })
 

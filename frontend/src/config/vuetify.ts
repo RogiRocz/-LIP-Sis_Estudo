@@ -3,6 +3,8 @@ import { createVuetify } from 'vuetify'
 import 'vuetify/styles'
 import 'material-symbols/outlined.css'
 import {aliases, md} from 'vuetify/iconsets/md'
+import * as LabsComponentes from 'vuetify/labs/components'
+
 
 /**
  * Paleta de Cores StudyFlow:
@@ -11,7 +13,7 @@ import {aliases, md} from 'vuetify/iconsets/md'
  * gradient_end: 764ba2 (Roxo Mais Escuro - Para o App Bar)
  */
 const StudyFlowTheme = {
-	defaultTheme: 'dark',
+	defaultTheme: 'light',
 
 	themes: {
 		dark: {
@@ -74,4 +76,7 @@ export default createVuetify({
 			}
 		}
 	},
+	components: {
+		...LabsComponentes
+	}
 })
