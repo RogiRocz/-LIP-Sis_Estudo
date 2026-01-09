@@ -61,9 +61,14 @@ class RevisaoRepository:
         return revisoes, total
 
     async def update_revisao(self, db_revisao: RevisaoModel) -> RevisaoModel:
-        await self.db.commit()
-        await self.db.refresh(db_revisao)
-        return db_revisao
+        self.db.add(db_revisao)
+        try:
+            await self.db.commit()
+            await self.db.refresh(db_revisao)
+            return db_revisao
+        except Exception as e:
+            await self.db.rollback()
+            raise e
 
     async def delete_revisao(self, db_revisao: RevisaoModel) -> None:
         await self.db.delete(db_revisao)
