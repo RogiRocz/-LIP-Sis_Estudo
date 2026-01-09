@@ -1,22 +1,67 @@
 <template>
-  <ViewContainer>
-    <template #view-content>
-      <PageHeader :pageTitle="name" :pageDescription="description" />
-    </template>
-  </ViewContainer>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
+        <h5 class="text-h5 mb-4">Configurações</h5>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title>Perfil</v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="user.nome"
+              label="Nome de Usuário"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="user.email"
+              label="Email"
+              readonly
+            ></v-text-field>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title>Aparência</v-card-title>
+          <v-card-text>
+            <v-switch
+              v-model="isDarkMode"
+              label="Tema Escuro"
+              @change="toggleTheme"
+            ></v-switch>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
-<script setup lang="ts">
-import PageHeader from '@/components/PageHeader.vue'
-import ViewContainer from '@/components/ViewContainer.vue'
-import { tabsNavigation } from '@/utils/tabsNavigation'
-import { computed } from 'vue'
+<script setup>
+import { ref, computed } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/theme'
+import { storeToRefs } from 'pinia'
 
-const currentView = computed(() =>
-  tabsNavigation.value.find((tab) => tab.routeName === 'configuracoes'),
-)
-const name = computed(() => currentView.value?.name || '')
-const description = computed(() => currentView.value?.description || '')
+// User Store
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
+
+// Theme Store
+const themeStore = useThemeStore()
+const { toggleTheme } = themeStore
+const isDarkMode = computed({
+  get: () => themeStore.isDarkMode,
+  set: (value) => {
+    if (value !== themeStore.isDarkMode) {
+      toggleTheme()
+    }
+  },
+})
 </script>
-
-<style scoped></style>
