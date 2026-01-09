@@ -13,4 +13,14 @@ async function getProfile(): Promise<Usuario> {
 	}
 }
 
-export { getProfile }
+async function criarDadosExemplo(): Promise<any> {
+	try {
+		const response = await api.post(`${resourceUrl}/dados-exemplo`)
+		return response.data
+	} catch (error) {
+		console.error('Erro ao criar dados de exemplo:', error)
+		throw error
+	}
+}
+
+export { getProfile, criarDadosExemplo }
