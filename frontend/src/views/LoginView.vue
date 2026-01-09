@@ -83,11 +83,11 @@ async function handleSubmit() {
 			setToken(response.token)
 			setUser(response.user)
 
-			// const { data: sessionData, error: errorSupabase } =
-			// 	await supabase.auth.setSession({
-			// 		access_token: response.token,
-			// 		refresh_token: response.token,
-			// 	})
+			const { data: sessionData, error: errorSupabase } =
+				await supabase.auth.setSession({
+					access_token: response.token,
+					refresh_token: response.token,
+				})
 
 			// if (errorSupabase) {
 			// 	console.error('Erro detalhado:', errorSupabase)

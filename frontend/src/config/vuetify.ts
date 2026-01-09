@@ -3,8 +3,6 @@ import { createVuetify } from 'vuetify'
 import 'vuetify/styles'
 import 'material-symbols/outlined.css'
 import {aliases, md} from 'vuetify/iconsets/md'
-import * as LabsComponentes from 'vuetify/labs/components'
-
 
 /**
  * Paleta de Cores StudyFlow:
@@ -21,13 +19,13 @@ const StudyFlowTheme = {
 			colors: {
 				background: '121212',
 				surface: '1E1E1E',
-				primary: 'A18CD1',
+				primary: '17a2b8',
 				secondary: '667eea',
 				card: '2d3748',
 				error: 'EF4444',
 				info: '17a2b8',
-				success: '48BB78',
-				warning: 'F687B3',
+				success: '10B981',
+				warning: 'FBBF24',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
@@ -41,13 +39,9 @@ const StudyFlowTheme = {
 			colors: {
 				background: 'fff',
 				surface: '1E1E1E',
-				primary: 'A18CD1',
+				primary: '17a2b8',
 				secondary: '667eea',
 				card: 'f0f4f8',
-				error: 'EF4444',
-				info: '17a2b8',
-				success: 'FFD700',
-				warning: 'F687B3',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
 			},
@@ -76,7 +70,4 @@ export default createVuetify({
 			}
 		}
 	},
-	components: {
-		...LabsComponentes
-	}
 })

@@ -8,18 +8,9 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	const disciplinas = ref<Disciplina[] | null>([])
 	const temas = ref<Map<number, Tema[]> | null>(new Map())
 	const revisoes = ref<Map<number, Revisao[]> | null>(new Map())
-
-	const currPage = ref(1)
-	const itensPerPage = ref(12)
-	const totalItems = ref(0)
 	const loading = ref(true)
 
 	const disciplinas_quantity = computed(() => disciplinas.value?.length || 0)
-
-	const totalPages = computed(() => {
-		const pages = Math.ceil(totalItems.value / itensPerPage.value)
-		return pages > 0 ? pages : 1
-	})
 
 	const temas_quantity = (disciplina_id: number) => {
 		const temasDaDisciplina = temas.value?.get(disciplina_id)
@@ -38,18 +29,6 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		revisoes.value = data
 	}
 
-	const setPage = (page: number, itens: number) => {
-		if (
-			page > 0 &&
-			itens > 0 &&
-			page <= totalPages.value &&
-			itens <= itensPerPage.value
-		) {
-			currPage.value = page
-			itensPerPage.value = itens
-		}
-	}
-
 	const reset = () => {
 		disciplinas.value = null
 		temas.value = null
@@ -57,24 +36,15 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	}
 
 	const setupRealtime = async () => {
-		if (activeChannel) {
-			await supabase.removeChannel(activeChannel)
-			activeChannel = null
-		}
+		await supabase.removeAllChannels()
 
-		activeChannel = supabase
+		const channel = supabase
 			.channel('db-public-changes')
 			.on(
 				'postgres_changes',
 				{ event: '*', schema: 'public', table: 'Disciplina' },
 				(payload) => {
 					disciplinas.value = syncArray(disciplinas.value, payload)
-
-					if (payload.eventType === 'INSERT') {
-						totalItems.value++
-					} else if (payload.eventType === 'DELETE') {
-						totalItems.value--
-					}
 				},
 			)
 			.on(
@@ -92,24 +62,17 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 				},
 			)
 			.subscribe((status, err) => {
-				console.log('Status do Canal:', status)
-				if (status === 'CLOSED' || status === 'TIMED_OUT') {
-					console.log('Canal fechado ou temporariamente fora do ar.')
-				} else if (err) {
-					console.error('Erro ao se conectar ao canal:', err)
-				}
+				// console.log('Status do Canal:', status)
+				// console.error('Erro no Canal:', err)
 			})
 
-		return activeChannel
+		return channel
 	}
 
 	return {
 		disciplinas,
 		temas,
 		revisoes,
-		currPage,
-		itensPerPage,
-		totalItems,
 		loading,
 		disciplinas_quantity,
 		temas_quantity,
@@ -118,16 +81,5 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		setRevisoes,
 		reset,
 		setupRealtime,
-		setPage,
-		totalPages,
 	}
 })
-
-let activeChannel: any = null
-
-if (import.meta.hot) {
-	import.meta.hot.dispose(async () => {
-		await supabase.removeAllChannels()
-		console.log('HMR: Canais do Supabase limpos para evitar duplicidade.')
-	})
-}

@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { getProfile } from '@/api/user'
 import router from '@/router'
-import { useTheme } from 'vuetify'
 
 export const useUserStore = defineStore('userStore', () => {
 	// State
@@ -11,17 +10,11 @@ export const useUserStore = defineStore('userStore', () => {
 	const loading = ref(false)
 	const token = ref(localStorage.getItem('authToken') || null)
 	const user = ref<Usuario | null>(null)
-	const atualTheme = ref('')
-
-	const theme = useTheme()
 
 	// Getters
 	const isDrawerOpen = computed(() => drawerAuth.value)
 	const isAuthenticated = computed(() => !!token.value)
 	const getUser = computed(() => user.value)
-	const getTheme = computed(() => atualTheme.value)
-	const isDarkTheme = computed(() => theme.global.name.value === 'dark')
-
 
 	// Actions
 	const toggleDrawerAuth = () => {
@@ -80,8 +73,5 @@ export const useUserStore = defineStore('userStore', () => {
 		toggleDrawerAuth,
 		logout,
 		fetchUser,
-		atualTheme,
-		getTheme,
-		isDarkTheme
 	}
 })

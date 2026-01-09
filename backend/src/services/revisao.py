@@ -71,14 +71,14 @@ class RevisaoService:
 
         update_data = revisao_update.model_dump(exclude_unset=True)
 
+        db_revisao.status = "REALIZADA"
+        db_revisao.data_realizada = update_data.get("data_realizada", datetime.now())
+
         if "tempo_dedicado" in update_data:
             db_revisao.tempo_dedicado = update_data["tempo_dedicado"]
 
         if "descricao" in update_data:
             db_revisao.descricao = update_data["descricao"]
-
-        db_revisao.status = "REALIZADA"
-        db_revisao.data_realizada = update_data.get("data_realizada") or datetime.now()
 
         return await self.repo.update_revisao(db_revisao)
 

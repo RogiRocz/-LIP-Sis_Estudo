@@ -6,24 +6,21 @@ import ViewContainer from '@/components/ViewContainer.vue'
 import DisciplineDialog from '@/components/DisciplineDialog.vue'
 
 import { tabsNavigation } from '@/utils/tabsNavigation'
-import { computed, onActivated, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { getDisciplinas } from '@/api/disciplina'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
+import { Disciplina, Revisao, Tema } from '@/utils/apiTypes'
+import { getTemas } from '@/api/tema'
+import { getRevisoes } from '@/api/revisao'
 import { useDisciplinaStore } from '@/stores/useDisciplinaStore'
-import { syncAprendizadoCompleto } from '@/services/AprendizadoService'
+
+const ITENS_PER_PAGE = 12
 
 const aprendizadoStore = useAprendizadoStore()
-const {
-	loading,
-	disciplinas,
-	temas,
-	totalPages,
-	currPage: page,
-	itensPerPage,
-	totalItems,
-} = storeToRefs(aprendizadoStore)
-const { temas_quantity } = aprendizadoStore
+const { loading, disciplinas, temas, revisoes } = storeToRefs(aprendizadoStore)
+const { temas_quantity, reset } = aprendizadoStore
 
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
@@ -31,50 +28,166 @@ const { addMessage } = snackbarStore
 const disciplinaStore = useDisciplinaStore()
 const { isEditing } = storeToRefs(disciplinaStore)
 
+const page = ref(1)
+const total_pages = ref(1)
+
 const currentView = computed(() =>
 	tabsNavigation.value.find((tab) => tab.routeName === 'disciplina'),
 )
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
 
-const carregarDados = async (newPage: number) => {
+watch(page, async (newPage) => {
 	try {
 		loading.value = true
-		await syncAprendizadoCompleto(newPage, itensPerPage.value)
+
+		// await Promise.all([fetchDisciplinas(), fetchTemas(), fetchRevisoes()])
+		await fetchDisciplinas()
+		await fetchTemas()
+		await fetchRevisoes()
 	} catch (error) {
-		addMessage({ text: 'Erro ao sincronizar dados.', color: 'error' })
+		addMessage({ text: 'Erro ao atualizar dados da página.', color: 'error' })
+	} finally {
+		loading.value = false
+	}
+})
+
+watch(
+	() => disciplinas.value.length,
+	(newVal) => {
+		const setPage = Math.ceil(newVal || 0 / ITENS_PER_PAGE)
+		if (setPage != 1) {
+			fetchDisciplinas()
+		}
+	},
+)
+
+async function fetchAprendizado() {
+	try {
+		loading.value = true
+
+		if (!alreadyFetched()) {
+			switch (whoFetch()) {
+				case 'all':
+					await fetchDisciplinas()
+					// await Promise.all([fetchTemas(), fetchRevisoes()])
+					await fetchTemas()
+					await fetchRevisoes()
+					break
+				case 'temas':
+					await fetchTemas()
+					break
+				case 'revisoes':
+					await fetchRevisoes()
+					break
+				default:
+					addMessage({ text: 'Erro ao carregar os dados.', color: 'error' })
+					reset()
+					break
+			}
+		}
+	} catch (error) {
+		console.log('Erro ao carregar os dados.', error)
+		addMessage({ text: 'Erro ao carregar os dados.', color: 'error' })
+		loading.value = false
+		reset()
 	} finally {
 		loading.value = false
 	}
 }
 
-watch(page, async (newPage) => {
+function alreadyFetched() {
+	const hasDisciplinas = disciplinas.value && disciplinas.value.length > 0
+	const hasTemas = temas.value && temas.value.size > 0
+	const hasRevisoes = revisoes.value && revisoes.value.size > 0
+
+	return !!hasDisciplinas && !!hasTemas && !!hasRevisoes
+}
+
+function whoFetch() {
+	if (!disciplinas.value || disciplinas.value.length === 0) return 'all'
+	if (!temas.value || temas.value.size === 0) return 'temas'
+	if (!revisoes.value || revisoes.value.size === 0) return 'revisoes'
+	return 'none'
+}
+
+async function fetchDisciplinas() {
 	try {
-		carregarDados(newPage)
+		const disciplinasData = await getDisciplinas({
+			page: page.value,
+			size: ITENS_PER_PAGE,
+		})
+
+		if (disciplinasData.total === 0) {
+			addMessage({ text: 'Nenhuma disciplina encontrada', color: 'warning' })
+			return
+		}
+
+		aprendizadoStore.setDisciplinas(disciplinasData.items.flat())
+
+		total_pages.value = disciplinasData.pages
+		if (disciplinasData.pages < page.value) page.value = disciplinasData.pages
 	} catch (error) {
-		addMessage({ text: 'Erro ao atualizar os dados página.', color: 'error' })
+		console.log('Erro ao carregar os dados das disciplinas. ', error)
 	}
-})
+}
 
-watch(
-	() => disciplinas.value?.length,
-	(newLen) => {
-		if (newLen === undefined) return
+async function fetchTemas() {
+	try {
+		if (!disciplinas.value) return
 
-		if (newLen > itensPerPage.value) {
-			disciplinas.value.splice(itensPerPage.value)
+		const ids_disciplinas = disciplinas.value.map((d: Disciplina) => d.ID)
+		const temas_map = new Map<number, Tema[]>()
+
+		await Promise.all(
+			ids_disciplinas.map(async (id) => {
+				const temasData = await getTemas(id)
+				temas_map.set(id, temasData.items.flat())
+			}),
+		)
+		aprendizadoStore.setTemas(temas_map)
+	} catch (error) {
+		console.log('Erro ao carregar os dados dos temas.', error)
+	}
+}
+
+async function fetchRevisoes() {
+	try {
+		if (!temas.value) return
+
+		const ids_temas: number[] = []
+		for (const temas_array of Array.from(temas.value.values())) {
+			temas_array.forEach((tema: Tema) => ids_temas.push(tema.ID))
 		}
 
-		if (newLen === 0 && page.value > 1) {
-			page.value--
+		const revisoes_map = new Map<number, Revisao[]>()
+
+		if (ids_temas.length > 0) {
+			const arrayRevisoes = await getRevisoes()
+
+			if (arrayRevisoes && arrayRevisoes.items.length > 0) {
+				ids_temas.forEach((id) => {
+					const revDoTema = arrayRevisoes.items
+						.flat()
+						.filter((r) => r.tema_id === id)
+					revisoes_map.set(id, revDoTema)
+				})
+			}
 		}
-	},
-)
+
+		aprendizadoStore.setRevisoes(revisoes_map)
+	} catch (error) {
+		console.log('Erro ao carregar os dados das revisões.', error)
+	}
+}
 
 onMounted(async () => {
-	if (!disciplinas.value || disciplinas.value.length === 0) {
-		await carregarDados(page.value)
+	if (alreadyFetched()) {
+		loading.value = false
+		return
 	}
+
+	await fetchAprendizado()
 })
 </script>
 <template>
@@ -89,11 +202,7 @@ onMounted(async () => {
 					>
 						{{ isEditing ? 'Cancelar Edição' : 'Modo Edição' }}
 					</v-btn>
-					<DisciplineDialog
-						:title="'Nova disciplina'"
-						:subtitle="'Crie uma nova disciplina para organizar seus estudos'"
-						:whichFuncToCall="'create'"
-					>
+					<DisciplineDialog :title="'Nova disciplina'" :subtitle="'Crie uma nova disciplina para organizar seus estudos'" :whichFuncToCall="'create'">
 						<template #button="props">
 							<v-btn prepend-icon="add" class="botao-gradient" v-bind="props"
 								>Nova disciplina</v-btn
@@ -106,7 +215,7 @@ onMounted(async () => {
 				<template #main-content>
 					<v-row>
 						<v-col
-							v-for="d in disciplinas.slice(0, itensPerPage)"
+							v-for="d in disciplinas.slice(0, ITENS_PER_PAGE)"
 							:key="d.ID"
 							cols="12"
 							sm="6"
@@ -126,7 +235,7 @@ onMounted(async () => {
 						prev-icon="chevron_left"
 						next-icon="chevron_right"
 						v-model="page"
-						:length="totalPages"
+						:length="total_pages"
 					></v-pagination>
 				</template>
 			</MainContainer>

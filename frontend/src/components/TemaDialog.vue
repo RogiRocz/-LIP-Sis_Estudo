@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/useUserStore'
 import { Revisao } from '@/utils/apiTypes'
 import { required } from '@/utils/rulesAuth'
 import { storeToRefs } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 const dialog = ref(false)
 const loading = ref(false)
@@ -32,8 +32,6 @@ const props = defineProps<{
 	whichFuncToCall: string
 	initialData?: any
 }>()
-
-const isEditing = computed(() => props.whichFuncToCall === 'update')
 
 function calcDays(r: Revisao) {
 	const dataRev = new Date(r.data_prevista).getTime()
@@ -161,7 +159,6 @@ function removeInterval(index: number) {
 						<v-row :key="i" class="revisao-container">
 							<span class="revisao-label">Revisão {{ i + 1 }}</span>
 							<v-number-input
-								:disabled="isEditing"
 								class="custom-number-input"
 								control-variant="stacked"
 								max-width="10vw"
@@ -173,7 +170,6 @@ function removeInterval(index: number) {
 							></v-number-input>
 							<span>dias</span>
 							<v-btn
-								v-show="!isEditing"
 								variant="plain"
 								icon="close"
 								@click="removeInterval(i)"

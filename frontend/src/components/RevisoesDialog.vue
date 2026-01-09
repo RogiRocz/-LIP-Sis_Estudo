@@ -118,7 +118,7 @@ watch(dialog, (value) => {
 				tema?.descricao
 			}}</v-card-subtitle>
 
-			<v-list lines="one" rounded="lg">
+			<v-list bg-color="#dddddd" lines="one" rounded="lg">
 				<v-list-item
 					v-for="(r, i) in revisoesOrdenadas"
 					:key="i"
@@ -216,10 +216,6 @@ watch(dialog, (value) => {
 </template>
 
 <style scoped>
-.v-list {
-	background-color: inherit;
-}
-
 .rev-card-item {
 	display: flex;
 	flex-direction: row-reverse;
