@@ -9,21 +9,33 @@ import { watch, onMounted, ref } from 'vue'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { supabase } from '@/config/supabase'
 import { syncAprendizadoCompleto } from '@/services/AprendizadoService'
+import { useTheme } from 'vuetify'
 
 let isRealtimeStarted = false;
 
 const userStore = useUserStore()
-const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
+const { drawerAuth, isAuthenticated, user } = storeToRefs(userStore)
 const { fetchUser } = userStore
 
 const snackbarStore = useSnackbarStore()
 const { messages } = storeToRefs(snackbarStore)
 
+const theme = useTheme()
 const route = useRoute()
 const router = useRouter()
 const isRouterReady = ref(false)
 
 const routesWithoutAppBar = ref(['login', 'cadastro', 'not-found'])
+
+watch(
+	() => user.value?.ui_theme,
+	(newTheme) => {
+		if (newTheme) {
+			theme.global.name.value = newTheme
+		}
+	},
+	{ immediate: true },
+)
 
 watch(route, (newVal) => {
 	if (
