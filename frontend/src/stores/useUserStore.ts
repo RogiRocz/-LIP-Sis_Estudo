@@ -12,7 +12,6 @@ export const useUserStore = defineStore('userStore', () => {
 	const token = ref(localStorage.getItem('authToken') || null)
 	const user = ref<Usuario | null>(null)
 	const atualTheme = ref('')
-
 	const theme = useTheme()
 
 	// Getters
@@ -49,7 +48,7 @@ export const useUserStore = defineStore('userStore', () => {
 		localStorage.removeItem('authToken')
 		token.value = null
 		user.value = null
-		router.replace({name: 'login'})
+		router.replace({ name: 'login' })
 	}
 
 	const fetchUser = async () => {
