@@ -48,6 +48,24 @@ interface Revisao {
 	descricao: string | null
 }
 
+interface Estatisticas {
+  total_disciplinas: number;
+  total_temas: number;
+  total_revisoes: number;
+  revisoes_hoje: number;
+}
+
+interface EvolucaoSemanal {
+  data: string;
+  revisoes_realizadas: number;
+}
+
+interface RevisaoDoDia {
+  id_revisao: number;
+  titulo_tema: string;
+  nome_disciplina: string;
+}
+
 export type {
 	Usuario,
 	AuthResponse,
@@ -56,4 +74,7 @@ export type {
 	Tema,
 	Disciplina,
 	Revisao,
+	Estatisticas,
+	EvolucaoSemanal,
+	RevisaoDoDia
 }
