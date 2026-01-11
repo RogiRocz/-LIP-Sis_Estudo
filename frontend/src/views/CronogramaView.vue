@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { useUserStore } from '@/stores/useUserStore'
@@ -21,7 +21,7 @@ const { disciplinas, temas, revisoes, loading } = storeToRefs(aprendizadoStore)
 
 const calendar = ref<any>(null)
 const calendarKey = ref(0)
-const type = ref('month')
+const type = ref<'month' | 'week'>('month')
 
 const focus = ref(new Date())
 
@@ -62,15 +62,6 @@ const sincronizarFoco = () => {
 const irParaHoje = () => {
 	focus.value = new Date()
 }
-
-watch(type, () => {
-	calendarKey.value++
-	console.log('Modo alterado para:', type.value)
-
-	setTimeout(() => {
-		sincronizarFoco()
-	}, 100)
-})
 
 const sincronizarDados = async () => {
 	try {
@@ -190,7 +181,7 @@ onMounted(() => {
 									<v-btn
 										variant="elevated"
 										:color="calendarBackground"
-										class="today-btn rounded-lg font-weight-bold text-black"
+										class="rounded-lg font-weight-bold"
 										@click="irParaHoje"
 										>Hoje</v-btn
 									>
@@ -201,16 +192,18 @@ onMounted(() => {
 										@click="prev"
 									></v-btn>
 
-									<v-toolbar-title
-										class="text-h6 font-weight-bold text-capitalize"
-									>
-										{{
-											focus.toLocaleString('pt-BR', {
-												month: 'long',
-												year: 'numeric',
-											})
-										}}
-									</v-toolbar-title>
+									<v-container width="min-content">
+										<v-toolbar-title
+											class="text-h6 font-weight-bold text-uppercase"
+										>
+											{{
+												focus.toLocaleString('pt-BR', {
+													month: 'long',
+													year: 'numeric',
+												})
+											}}
+										</v-toolbar-title>
+									</v-container>
 
 									<v-btn
 										icon="chevron_right"
@@ -228,21 +221,19 @@ onMounted(() => {
 									>
 										<v-btn
 											value="month"
-											class="px-4"
+											class="btn-switch px-4"
 											:color="
 												type === 'month' ? calendarBackground : 'background'
 											"
-											@click="type = 'month'"
 										>
 											MÊS
 										</v-btn>
 										<v-btn
 											value="week"
-											class="px-4"
+											class="btn-switch px-4"
 											:color="
 												type === 'week' ? calendarBackground : 'background'
 											"
-											@click="type = 'week'"
 										>
 											SEMANA
 										</v-btn>
@@ -250,33 +241,9 @@ onMounted(() => {
 								</v-toolbar>
 
 								<v-calendar
-									v-if="type === 'month'"
-									:key="'month-' + calendarKey"
 									ref="calendar"
 									v-model="focus"
-									view-mode="month"
-									:events="events"
-									locale="pt-br"
-									header-less
-									@click:day="onDayClick"
-								>
-									<template #event="{ event }">
-										<div
-											class="v-calendar-event-custom"
-											:style="{ backgroundColor: event.color }"
-											@click.stop="onDayClick({ date: event.start })"
-										>
-											{{ event.title }}
-										</div>
-									</template>
-								</v-calendar>
-
-								<v-calendar
-									v-else
-									:key="'week-' + calendarKey"
-									ref="calendar"
-									v-model="focus"
-									view-mode="week"
+									:type="type"
 									:events="events"
 									locale="pt-br"
 									header-less
@@ -382,11 +349,12 @@ onMounted(() => {
 									class="list-wrapper"
 									v-if="revisoesDaDisciplina.length > 0"
 								>
-									<v-list class="pa-4 bg-transparent" lines="two">
+									<v-list bg-color="background" class="pa-4 bg-transparent" lines="two">
 										<v-list-item
 											v-for="r in revisoesDaDisciplina"
 											:key="r.ID"
 											class="mb-3 border rounded-xl shadow-sm"
+											:class="themeColor === 'primary'? 'revisao-item-primary' : 'revisao-item-secondary'"
 										>
 											<v-list-item-title class="font-weight-bold">{{
 												r.temaNome
@@ -433,7 +401,7 @@ onMounted(() => {
 }
 
 :deep(.v-calendar) {
-	background-color: rgb(var(--v-theme-surface)) !important;
+	background-color: v-bind(calendarBackground) !important;
 
 	min-height: 700px;
 }
@@ -472,6 +440,14 @@ onMounted(() => {
 
 :deep(.v-calendar-weekly__week) {
 	background-color: v-bind(calendarBackground);
+}
+
+:deep(.v-calendar-weekly .v-calendar-weekly__head-weekday.v-outside){
+	border: v-bind(calendarBackground) 1px solid;
+	border-top: 0;
+
+	border-right: 0;
+	color: v-bind(calendarBackground);
 }
 
 :deep(.v-calendar-weekly__head-weekday.v-past.v-past:not(.v-outside)) {
@@ -519,4 +495,21 @@ onMounted(() => {
 	background-color: v-bind(calendarBackground);
 	color: white;
 }
+
+.btn-switch{
+	background-color: rgb(var(--v-theme-background));
+	color: v-bind(calendarBackground);
+	transition: background-color .4s ease-in-out;
+}
+
+.revisao-item-secondary{
+	background-color: rgb(var(--v-theme-secondary)) !important;
+	color: rgb(var(--v-theme-background)) !important;
+}
+
+.revisao-item-primary{
+	background-color: rgb(var(--v-theme-primary)) !important;
+	color: rgb(var(--v-theme-background)) !important;
+}
+
 </style>
