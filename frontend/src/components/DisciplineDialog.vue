@@ -122,9 +122,6 @@ const handlePickerHover = (event: MouseEvent) => {
         
         if (rgbColor) {
             const hexColor = rgbToHex(rgbColor);
-            
-            // LOG PARA DEBUG: Se continuar Black, veja o que aparece no console
-            // console.log("HEX convertido:", hexColor); 
 
             const result = getColorName(hexColor);
 
