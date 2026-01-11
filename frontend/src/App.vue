@@ -11,7 +11,7 @@ import { supabase } from '@/config/supabase'
 import { syncAprendizadoCompleto } from '@/services/AprendizadoService'
 import { useTheme } from 'vuetify'
 
-let isRealtimeStarted = false;
+let isRealtimeStarted = false
 
 const userStore = useUserStore()
 const { drawerAuth, isAuthenticated, user } = storeToRefs(userStore)
@@ -20,22 +20,11 @@ const { fetchUser } = userStore
 const snackbarStore = useSnackbarStore()
 const { messages } = storeToRefs(snackbarStore)
 
-const theme = useTheme()
 const route = useRoute()
 const router = useRouter()
 const isRouterReady = ref(false)
 
 const routesWithoutAppBar = ref(['login', 'cadastro', 'not-found'])
-
-watch(
-	() => user.value?.ui_theme,
-	(newTheme) => {
-		if (newTheme) {
-			theme.global.name.value = newTheme
-		}
-	},
-	{ immediate: true },
-)
 
 watch(route, (newVal) => {
 	if (
@@ -49,21 +38,25 @@ watch(route, (newVal) => {
 	}
 })
 
-watch(isAuthenticated, async (val) => {
-    if (val && !isRealtimeStarted) {
-        isRealtimeStarted = true;
-        useAprendizadoStore().setupRealtime();
+watch(
+	isAuthenticated,
+	async (val) => {
+		if (val && !isRealtimeStarted) {
+			isRealtimeStarted = true
+			useAprendizadoStore().setupRealtime()
 
-		try {
-            await syncAprendizadoCompleto(1, 12);
-        } catch (e) {
-            console.error("Falha na carga inicial de aprendizado completo.");
-        }
-    } else if (!val) {
-        isRealtimeStarted = false;
-        supabase.removeAllChannels();
-    }
-}, { immediate: true });
+			try {
+				await syncAprendizadoCompleto(1, 12)
+			} catch (e) {
+				console.error('Falha na carga inicial de aprendizado completo.')
+			}
+		} else if (!val) {
+			isRealtimeStarted = false
+			supabase.removeAllChannels()
+		}
+	},
+	{ immediate: true },
+)
 
 onMounted(async () => {
 	router.isReady().then(() => {
@@ -87,11 +80,11 @@ onMounted(async () => {
 		<AppBar v-if="isRouterReady && !drawerAuth" />
 		<v-main v-if="isRouterReady" :class="{ 'drawer-auth': drawerAuth }">
 			<router-view v-if="isRouterReady" v-slot="{ Component, route }">
-				<v-slide-x-transition mode="out-in">
+				<v-fade-trasition mode="out-in">
 					<KeepAlive :max="10">
-						<component :is="Component" :key="route.path" />
+						<component :is="Component" :key="route.fullPath" />
 					</KeepAlive>
-				</v-slide-x-transition>
+				</v-fade-trasition>
 			</router-view>
 		</v-main>
 
