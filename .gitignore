@@ -26,4 +26,4 @@ yarn-error.log*
 package-lock.json
 *.nix
 .venv/
-__pycache__
+__pycache__frontend/npm_output.log
