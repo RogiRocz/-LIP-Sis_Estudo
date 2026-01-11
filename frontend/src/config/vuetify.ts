@@ -46,7 +46,7 @@ const StudyFlowTheme = {
 				card: 'f0f4f8',
 				error: 'EF4444',
 				info: '17a2b8',
-				success: 'FFD700',
+				success: '48BB78',
 				warning: 'F687B3',
 				'app-bar-gradient-start': '667eea',
 				'app-bar-gradient-end': '764ba2',
