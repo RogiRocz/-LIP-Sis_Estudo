@@ -20,7 +20,6 @@ export const useUserStore = defineStore('userStore', () => {
 	const isDarkTheme = computed(() => theme.global.name.value === 'dark')
 	const intervalos = computed(() => user.value?.intervalo_revisoes)
 
-
 	// Actions
 	const toggleDrawerAuth = () => {
 		drawerAuth.value = !drawerAuth.value
@@ -56,7 +55,7 @@ export const useUserStore = defineStore('userStore', () => {
 				const userData = await getProfile()
 				setUser(userData)
 
-				if (userData.ui_theme) {
+				if (userData?.ui_theme) {
 					theme.global.name.value = userData.ui_theme
 				}
 			} catch (error) {
@@ -69,8 +68,21 @@ export const useUserStore = defineStore('userStore', () => {
 		}
 	}
 
-	const setTheme = (isDark: boolean) => {
-		theme.global.name.value = isDark ? 'dark' : 'light'
+	const setTheme = async (isDark: boolean) => {
+		const themeName = isDark ? 'dark' : 'light'
+		theme.global.name.value = themeName
+
+		if (user.value) {
+			user.value.ui_theme = themeName
+		}
+	}
+
+	const updateTheme = (themeName: string) => {
+		theme.global.name.value = themeName
+
+		setTimeout(() => {
+			window.dispatchEvent(new Event('theme-changed'));
+		}, 100);
 	}
 
 	return {
@@ -89,5 +101,6 @@ export const useUserStore = defineStore('userStore', () => {
 		isDarkTheme,
 		intervalos,
 		setTheme,
+		updateTheme,
 	}
 })
