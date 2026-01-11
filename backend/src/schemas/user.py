@@ -15,6 +15,7 @@ class UserLogin(BaseModel):
     senha: str
 
 class UserUpdate(BaseModel):
+    nome: Optional[str] = None
     email: Optional[EmailStr] = None
     senha_atual: Optional[str] = None
     nova_senha: Optional[str] = None
