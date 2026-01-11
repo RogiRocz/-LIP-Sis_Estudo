@@ -62,12 +62,6 @@ export default createVuetify({
 	theme: {
 		defaultTheme: 'light',
 		themes: StudyFlowTheme.themes,
-		// Adicione isso para forçar atualizações
-		variations: {
-			colors: ['primary', 'secondary', 'error', 'info', 'success', 'warning'],
-			lighten: 4,
-			darken: 4,
-		},
 	},
 	icons: {
 		defaultSet: 'md',
