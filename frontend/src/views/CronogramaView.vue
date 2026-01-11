@@ -38,8 +38,8 @@ const theme = useTheme()
 
 const calendarBackground = computed(() => {
 	return isDarkTheme.value
-		? '#' + theme.global.current.value.colors.secondary
-		: '#' + theme.global.current.value.colors.primary
+		? theme.global.current.value.colors.secondary
+		: theme.global.current.value.colors.primary
 })
 
 const next = () => {

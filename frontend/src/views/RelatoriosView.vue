@@ -56,7 +56,7 @@ ChartJS.register(
 	Legend,
 )
 
-const colors = useTheme().current.value.colors
+const theme = useTheme()
 
 const loading = ref(true)
 const error = ref(null)
@@ -67,7 +67,7 @@ const fetchReports = async () => {
 		loading.value = true
 		const res = await fetch('/api/study-reports')
 		if (!res.ok) throw new Error('Erro ao buscar dados')
-		// sessions.value = await res.json();
+
 		sessions.value = [
 			{
 				id: 1,
@@ -107,27 +107,40 @@ const revisionsPending = computed(() =>
 	sessions.value.reduce((sum, s) => sum + s.revisionsPending, 0),
 )
 
-const pieData = computed(() => ({
-	labels: ['Concluídas', 'Pendentes'],
-	datasets: [
-		{
-			data: [revisionsDone.value, revisionsPending.value],
-			backgroundColor: ['#' + colors.primary, '#' + colors.secondary],
-			borderWidth: 0,
-		},
-	],
-}))
+const pieData = computed(() => {
+	const currentColors = theme.current.value.colors
 
-const barData = computed(() => ({
-	labels: sessions.value.map((s) => s.subject),
-	datasets: [
-		{
-			label: 'Horas de estudo',
-			data: sessions.value.map((s) => (s.studyMinutes / 60).toFixed(2)),
-			backgroundColor: '#' + colors.secondary,
-		},
-	],
-}))
+	return {
+		labels: ['Concluídas', 'Pendentes'],
+		datasets: [
+			{
+				data: [revisionsDone.value, revisionsPending.value],
+
+				backgroundColor: [currentColors.primary, currentColors.secondary],
+				borderWidth: 0,
+			},
+		],
+	}
+})
+
+const barData = computed(() => {
+	const currentColors = theme.current.value.colors
+
+	return {
+		labels: sessions.value.map((s) => s.subject),
+		datasets: [
+			{
+				label: 'Horas de estudo',
+
+				data: sessions.value.map((s) =>
+					Number((s.studyMinutes / 60).toFixed(2)),
+				),
+
+				backgroundColor: currentColors.secondary,
+			},
+		],
+	}
+})
 
 const currentView = computed(() =>
 	tabsNavigation.value.find((tab) => tab.routeName === 'relatorios'),
@@ -136,8 +149,8 @@ const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
 </script>
 
-		<!-- rgb(var(--v-theme-app-bar-gradient-start)), -->
-		<!-- rgb(var(--v-theme-app-bar-gradient-end)) -->
+<!-- rgb(var(--v-theme-app-bar-gradient-start)), -->
+<!-- rgb(var(--v-theme-app-bar-gradient-end)) -->
 <style scoped>
 .reports {
 	min-height: 100vh;
