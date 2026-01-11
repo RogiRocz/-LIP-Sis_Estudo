@@ -4,7 +4,7 @@ import MainContainer from '@/components/MainContainer.vue'
 import ViewContainer from '@/components/ViewContainer.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
-import { ref, computed, watch, capitalize, nextTick } from 'vue'
+import { ref, computed, watch, capitalize } from 'vue'
 import { useUserStore } from '@/stores/useUserStore'
 import { storeToRefs } from 'pinia'
 import { useTheme } from 'vuetify'
@@ -38,9 +38,10 @@ const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 
 const colorBasedInTheme = computed(() => {
-	return isDarkTheme.value
-		? '#' + theme.global.current.value.colors.secondary
-		: '#' + theme.global.current.value.colors.primary
+	const colors = theme.global.current.value?.colors
+	if (!colors) return '#FFFFFF'
+
+	return isDarkTheme.value ? `${colors.secondary}` : `${colors.primary}`
 })
 
 const confirmDialogRef = ref<InstanceType<typeof ConfirmDialog> | null>(null)
@@ -91,12 +92,15 @@ const currentView = computed(() =>
 )
 
 const themeColor = computed(() => (isDarkTheme.value ? 'secondary' : 'primary'))
-const currentTheme = computed(() => theme.global.name.value)
 
 const darkModeModel = computed({
 	get: () => isDarkTheme.value,
 	set: async (val) => {
-		userStore.setTheme(val)
+		try {
+            userStore.setTheme(val)
+        } catch (e) {
+            console.error("Erro ao mudar tema, mas mantendo a interface:", e)
+        }
 	},
 })
 
@@ -142,6 +146,8 @@ const handleSave = async () => {
 
 		if (senhaConfirmada) {
 			loading.value = true
+			formConfirmPass.value.reset()
+
 			try {
 				const intervalosOrdenados = listaIntervalos.value
 					.filter((n) => n > 0)
@@ -150,14 +156,12 @@ const handleSave = async () => {
 				const response = await updateProfile({
 					nome: userName.value,
 					email: userEmail.value,
-					ui_theme: currentTheme.value,
+					ui_theme: theme.global.name.value,
 					intervalo_revisoes: intervalosOrdenados,
 				})
 
-				console.log('Usuario atual: ', user.value)
-				console.log('Usuario novo: ', response)
-
 				userStore.setUser(response)
+				userStore.updateTheme(response.ui_theme)
 				editPerfil.value = false
 				snackbarStore.addMessage({
 					text: 'Configurações do usário atualizadas',
@@ -172,12 +176,16 @@ const handleSave = async () => {
 	}
 }
 
-watch(user, (newUser) => {
-    if (newUser) {
-        userName.value = newUser.nome
-        userEmail.value = newUser.email
-    }
-}, { immediate: true })
+watch(
+	user,
+	(newUser) => {
+		if (newUser) {
+			userName.value = newUser.nome
+			userEmail.value = newUser.email
+		}
+	},
+	{ immediate: true },
+)
 </script>
 
 <template>
@@ -400,6 +408,7 @@ watch(user, (newUser) => {
 							<v-btn
 								class="botao-gradient px-10"
 								size="large"
+								:loading="loading"
 								@click="handleSave"
 								>SALVAR ALTERAÇÕES</v-btn
 							>
