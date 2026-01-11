@@ -11,15 +11,14 @@ export const useUserStore = defineStore('userStore', () => {
 	const loading = ref(false)
 	const token = ref(localStorage.getItem('authToken') || null)
 	const user = ref<Usuario | null>(null)
-	const atualTheme = ref('')
 	const theme = useTheme()
 
 	// Getters
 	const isDrawerOpen = computed(() => drawerAuth.value)
 	const isAuthenticated = computed(() => !!token.value)
 	const getUser = computed(() => user.value)
-	const getTheme = computed(() => atualTheme.value)
 	const isDarkTheme = computed(() => theme.global.name.value === 'dark')
+	const intervalos = computed(() => user.value?.intervalo_revisoes)
 
 
 	// Actions
@@ -56,6 +55,10 @@ export const useUserStore = defineStore('userStore', () => {
 			try {
 				const userData = await getProfile()
 				setUser(userData)
+
+				if (userData.ui_theme) {
+					theme.global.name.value = userData.ui_theme
+				}
 			} catch (error) {
 				console.error(
 					'Falha ao buscar usuário. Token pode ser inválido.',
@@ -64,6 +67,10 @@ export const useUserStore = defineStore('userStore', () => {
 				logout()
 			}
 		}
+	}
+
+	const setTheme = (isDark: boolean) => {
+		theme.global.name.value = isDark ? 'dark' : 'light'
 	}
 
 	return {
@@ -79,8 +86,8 @@ export const useUserStore = defineStore('userStore', () => {
 		toggleDrawerAuth,
 		logout,
 		fetchUser,
-		atualTheme,
-		getTheme,
-		isDarkTheme
+		isDarkTheme,
+		intervalos,
+		setTheme,
 	}
 })
