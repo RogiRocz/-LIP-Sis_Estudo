@@ -68,22 +68,19 @@ export const useUserStore = defineStore('userStore', () => {
 		}
 	}
 
-	const setTheme = async (isDark: boolean) => {
-		const themeName = isDark ? 'dark' : 'light'
-		theme.global.name.value = themeName
-
-		if (user.value) {
-			user.value.ui_theme = themeName
-		}
-	}
-
 	const updateTheme = (themeName: string) => {
-		theme.global.name.value = themeName
+        theme.change(themeName)
+    }
 
-		setTimeout(() => {
-			window.dispatchEvent(new Event('theme-changed'));
-		}, 100);
-	}
+    const setTheme = async (isDark: boolean) => {
+        const themeName = isDark ? 'dark' : 'light'
+        
+        if (user.value) {
+            user.value.ui_theme = themeName
+        }
+
+        updateTheme(themeName)
+    }
 
 	return {
 		drawerAuth,
