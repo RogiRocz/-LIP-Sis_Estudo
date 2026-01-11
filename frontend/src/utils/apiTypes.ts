@@ -2,7 +2,9 @@ interface Usuario {
 	nome: string
 	email: string
 	ui_theme: string
-	intervalo_revisoes: number[]
+	intervalo_revisoes: number[],
+	senha?: string
+	confirmar_senha?: string
 }
 
 interface AuthResponse {
