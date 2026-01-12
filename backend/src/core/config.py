@@ -9,12 +9,15 @@ load_dotenv(dotenv_path=env_path)
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
-    JWT_SECRET: str
     DEFAULT_THEME: str = "claro"
     DEFAULT_REVISION_INTERVAL: list[int] = [1, 7, 14]
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
+
+    DATABASE_URL: str
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_ROLE_KEY: str
+    SUPABASE_JWT_SECRET: str
 
 
 settings = Settings()

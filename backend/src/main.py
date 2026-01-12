@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, user, disciplina, tema, revisao, painel
+from .routers import auth, user, disciplina, tema, revisao, painel, seed
 from .database import Base, engine
 from sqlalchemy import text
 from contextlib import asynccontextmanager
@@ -51,6 +51,7 @@ app.include_router(tema.disciplina_tema_router)
 app.include_router(tema.tema_router)
 app.include_router(revisao.router)
 app.include_router(painel.router)
+app.include_router(seed.router)
 
 
 @app.get("/")

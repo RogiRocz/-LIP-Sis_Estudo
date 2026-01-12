@@ -2,7 +2,7 @@ interface Usuario {
 	nome: string
 	email: string
 	ui_theme: string
-	intervalo_revisoes: number[],
+	intervalo_revisoes: number[]
 	senha?: string
 	confirmar_senha?: string
 }
@@ -51,21 +51,34 @@ interface Revisao {
 }
 
 interface Estatisticas {
-  total_disciplinas: number;
-  total_temas: number;
-  total_revisoes: number;
-  revisoes_hoje: number;
+	total_disciplinas: number
+	total_temas: number
+	total_revisoes: number
+	revisoes_hoje: number
 }
 
 interface EvolucaoSemanal {
-  data: string;
-  revisoes_realizadas: number;
+	data: string
+	revisoes_realizadas: number
 }
 
 interface RevisaoDoDia {
-  id_revisao: number;
-  titulo_tema: string;
-  nome_disciplina: string;
+	id_revisao: number
+	titulo_tema: string
+	nome_disciplina: string
+}
+
+interface SeedRequest {
+	num_disciplinas?: number
+	num_temas_por_disciplina?: number
+	dias_retroceder?: number
+}
+
+interface SeedResponse {
+	disciplinas_criadas: number
+	temas_criados: number
+	revisoes_criadas: number
+	mensagem: string
 }
 
 export type {
@@ -78,5 +91,7 @@ export type {
 	Revisao,
 	Estatisticas,
 	EvolucaoSemanal,
-	RevisaoDoDia
+	RevisaoDoDia,
+	SeedRequest,
+	SeedResponse
 }
