@@ -37,9 +37,12 @@ const disciplinaSelecionada = ref<any>(null)
 const theme = useTheme()
 
 const calendarBackground = computed(() => {
-	return isDarkTheme.value
-		? theme.global.current.value.colors.secondary
-		: theme.global.current.value.colors.primary
+	const current = theme?.global?.current?.value
+	if (!current || !current.colors) {
+		return isDarkTheme.value ? '#1E1E1E' : '#FFFFFF'
+	}
+
+	return isDarkTheme.value ? current.colors.secondary : current.colors.primary
 })
 
 const next = () => {
@@ -349,12 +352,20 @@ onMounted(() => {
 									class="list-wrapper"
 									v-if="revisoesDaDisciplina.length > 0"
 								>
-									<v-list bg-color="background" class="pa-4 bg-transparent" lines="two">
+									<v-list
+										bg-color="background"
+										class="pa-4 bg-transparent"
+										lines="two"
+									>
 										<v-list-item
 											v-for="r in revisoesDaDisciplina"
 											:key="r.ID"
 											class="mb-3 border rounded-xl shadow-sm"
-											:class="themeColor === 'primary'? 'revisao-item-primary' : 'revisao-item-secondary'"
+											:class="
+												themeColor === 'primary'
+													? 'revisao-item-primary'
+													: 'revisao-item-secondary'
+											"
 										>
 											<v-list-item-title class="font-weight-bold">{{
 												r.temaNome
@@ -442,7 +453,7 @@ onMounted(() => {
 	background-color: v-bind(calendarBackground);
 }
 
-:deep(.v-calendar-weekly .v-calendar-weekly__head-weekday.v-outside){
+:deep(.v-calendar-weekly .v-calendar-weekly__head-weekday.v-outside) {
 	border: v-bind(calendarBackground) 1px solid;
 	border-top: 0;
 
@@ -496,20 +507,19 @@ onMounted(() => {
 	color: white;
 }
 
-.btn-switch{
+.btn-switch {
 	background-color: rgb(var(--v-theme-background));
 	color: v-bind(calendarBackground);
-	transition: background-color .4s ease-in-out;
+	transition: background-color 0.4s ease-in-out;
 }
 
-.revisao-item-secondary{
+.revisao-item-secondary {
 	background-color: rgb(var(--v-theme-secondary)) !important;
 	color: rgb(var(--v-theme-background)) !important;
 }
 
-.revisao-item-primary{
+.revisao-item-primary {
 	background-color: rgb(var(--v-theme-primary)) !important;
 	color: rgb(var(--v-theme-background)) !important;
 }
-
 </style>

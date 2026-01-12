@@ -88,10 +88,16 @@ const temasVisiveis = computed(() => {
 	})
 })
 
-const  cardColor = computed(() => {
+const cardColor = computed(() => {
+	const currentTheme = theme.global.current.value
+
+	if (!currentTheme || !currentTheme.colors) {
+		return isDarkTheme.value ? '#1E1E1E' : '#FFFFFF'
+	}
+
 	return isDarkTheme.value
-		? theme.global.current.value.colors.secondary
-		: theme.global.current.value.colors.primary
+		? currentTheme.colors.secondary
+		: currentTheme.colors.primary
 })
 
 async function handleDeleteDisciplina(id: number) {
