@@ -30,3 +30,10 @@ async def get_revisoes_do_dia(
     service: PainelService = Depends(),
 ):
     return await service.get_revisoes_do_dia(user.ID)
+
+@router.get("/relatorio-completo", response_model=painel_schema.RelatorioGeral)
+async def get_relatorio_completo(
+    user: UserModel = Depends(get_current_user),
+    service: PainelService = Depends(),
+):
+    return await service.get_relatorio_detalhado(user.ID)

@@ -1,25 +1,46 @@
 <template>
 	<ViewContainer>
 		<template #view-content>
-			<PageHeader :pageTitle="name" :pageDescription="description" />
+			<PageHeader :pageTitle="name" :pageDescription="description">
+				<template #actions>
+					<v-btn
+						prepend-icon="download"
+						color="primary"
+						variant="tonal"
+						:disabled="loading || sessions.length === 0"
+						@click="exportToCSV"
+					>
+						Exportar CSV
+					</v-btn>
+				</template>
+			</PageHeader>
+
 			<div class="reports">
-				<p v-if="loading">Carregando dados...</p>
+				<div v-if="loading" class="d-flex justify-center pa-10">
+					<v-progress-circular indeterminate color="primary" />
+				</div>
+
 				<p v-if="error" class="error">{{ error }}</p>
 
 				<div v-if="!loading && !error" class="grid">
 					<div class="card highlight">
 						<h3>Total estudado</h3>
 						<span class="big">{{ totalHours }}h</span>
+						<p class="text-caption">Soma de todos os temas</p>
 					</div>
 
 					<div class="card">
-						<h3>Revisões</h3>
-						<Pie :data="pieData" />
+						<h3>Status das Revisões</h3>
+						<div class="chart-container">
+							<Pie :data="pieData" :options="chartOptions" />
+						</div>
 					</div>
 
 					<div class="card wide">
 						<h3>Horas por disciplina</h3>
-						<Bar :data="barData" />
+						<div class="chart-container">
+							<Bar :data="barData" :options="chartOptions" />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -28,12 +49,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useTheme } from 'vuetify'
+import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import PageHeader from '@/components/PageHeader.vue'
 import ViewContainer from '@/components/ViewContainer.vue'
 import { tabsNavigation } from '@/utils/tabsNavigation'
-import { ref, computed, onMounted } from 'vue'
 import { Pie, Bar } from 'vue-chartjs'
-import { useTheme } from 'vuetify'
 import {
 	Chart as ChartJS,
 	ArcElement,
@@ -43,6 +65,7 @@ import {
 	Tooltip,
 	Legend,
 } from 'chart.js'
+import api from '@/api/apiConnect'
 
 ChartJS.register(
 	ArcElement,
@@ -54,35 +77,23 @@ ChartJS.register(
 )
 
 const theme = useTheme()
+const aprendizadoStore = useAprendizadoStore()
 
 const loading = ref(true)
 const error = ref(null)
-const sessions = ref([])
+
+const sessions = ref<any[]>([])
 
 const fetchReports = async () => {
 	try {
 		loading.value = true
-		const res = await fetch('/api/study-reports')
-		if (!res.ok) throw new Error('Erro ao buscar dados')
 
-		sessions.value = [
-			{
-				id: 1,
-				subject: 'Matemática',
-				studyMinutes: 90,
-				revisionsDone: 3,
-				revisionsPending: 2,
-			},
-			{
-				id: 2,
-				subject: 'Portugues',
-				studyMinutes: 30,
-				revisionsDone: 5,
-				revisionsPending: 3,
-			},
-		]
-	} catch (e) {
-		error.value = e.message
+		const response = await api.get('/painel/relatorio-completo')
+
+		sessions.value = response.data.data
+	} catch (e: any) {
+		error.value = 'Não foi possível carregar os dados reais.'
+		console.error(e)
 	} finally {
 		loading.value = false
 	}
@@ -90,30 +101,25 @@ const fetchReports = async () => {
 
 onMounted(fetchReports)
 
-const totalMinutes = computed(() =>
-	sessions.value.reduce((sum, s) => sum + s.studyMinutes, 0),
-)
-
-const totalHours = computed(() => (totalMinutes.value / 60).toFixed(1))
-
-const revisionsDone = computed(() =>
-	sessions.value.reduce((sum, s) => sum + s.revisionsDone, 0),
-)
-
-const revisionsPending = computed(() =>
-	sessions.value.reduce((sum, s) => sum + s.revisionsPending, 0),
-)
+const totalHours = computed(() => {
+	const totalMinutes = sessions.value.reduce(
+		(sum, s) => sum + s.studyMinutes,
+		0,
+	)
+	return (totalMinutes / 60).toFixed(1)
+})
 
 const pieData = computed(() => {
-	const currentColors = theme.current.value.colors
+	const colors = theme.current.value.colors
+	const done = sessions.value.reduce((sum, s) => sum + s.revisionsDone, 0)
+	const pending = sessions.value.reduce((sum, s) => sum + s.revisionsPending, 0)
 
 	return {
 		labels: ['Concluídas', 'Pendentes'],
 		datasets: [
 			{
-				data: [revisionsDone.value, revisionsPending.value],
-
-				backgroundColor: [currentColors.primary, currentColors.secondary],
+				data: [done, pending],
+				backgroundColor: [colors.primary, colors.secondary],
 				borderWidth: 0,
 			},
 		],
@@ -121,81 +127,113 @@ const pieData = computed(() => {
 })
 
 const barData = computed(() => {
-	const currentColors = theme.current.value.colors
-
+	const colors = theme.current.value.colors
 	return {
 		labels: sessions.value.map((s) => s.subject),
 		datasets: [
 			{
-				label: 'Horas de estudo',
-
+				label: 'Horas',
 				data: sessions.value.map((s) =>
 					Number((s.studyMinutes / 60).toFixed(2)),
 				),
-
-				backgroundColor: currentColors.secondary,
+				backgroundColor: colors.secondary,
 			},
 		],
 	}
 })
 
+const chartOptions = { responsive: true, maintainAspectRatio: false }
+
+const exportToCSV = () => {
+	const headers = [
+		'Disciplina',
+		'Minutos Estudados',
+		'Revisões Concluídas',
+		'Revisões Pendentes',
+	]
+	const rows = sessions.value.map((s) => [
+		s.subject,
+		s.studyMinutes,
+		s.revisionsDone,
+		s.revisionsPending,
+	])
+
+	const csvContent =
+		'\uFEFF' +
+		[headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+	const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+	const url = URL.createObjectURL(blob)
+	const link = document.createElement('a')
+	link.href = url
+	link.setAttribute(
+		'download',
+		`relatorio_estudos_${new Date().toLocaleDateString()}.csv`,
+	)
+	link.click()
+}
+
 const currentView = computed(() =>
 	tabsNavigation.value.find((tab) => tab.routeName === 'relatorios'),
 )
-const name = computed(() => currentView.value?.name || '')
-const description = computed(() => currentView.value?.description || '')
+const name = computed(() => currentView.value?.name || 'Relatórios')
+const description = computed(
+	() => currentView.value?.description || 'Visualize seu progresso',
+)
 </script>
 
 <style scoped>
 .reports {
-	min-height: 100vh;
-	padding: 32px;
-	color: rgb(var(--v-theme-secondary));
-	font-family: 'Inter', system-ui, sans-serif;
-}
-
-h1 {
-	font-size: 28px;
-	margin-bottom: 4px;
-}
-
-.subtitle {
-	color: rgb(var(--v-theme-primary));
-	margin-bottom: 32px;
+	padding: 24px;
+	color: rgb(var(--v-theme-on-surface));
 }
 
 .grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	gap: 24px;
 }
 
 .card {
-	background: rgb(var(--v-theme-card));
+	background: rgb(var(--v-theme-surface));
+	border: 1px solid rgba(var(--v-border-color), 0.12);
 	border-radius: 16px;
-	padding: 20px;
-	backdrop-filter: blur(8px);
+	padding: 24px;
+	min-height: 300px;
+	display: flex;
+	flex-direction: column;
 }
 
 .card.highlight {
-	display: flex;
-	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	text-align: center;
 }
 
 .card.wide {
 	grid-column: span 2;
 }
 
+.chart-container {
+	flex-grow: 1;
+	position: relative;
+	margin-top: 16px;
+	min-height: 200px;
+}
+
 .big {
-	font-size: 42px;
-	font-weight: 600;
-	margin-top: 8px;
+	font-size: 56px;
+	font-weight: 800;
 	color: rgb(var(--v-theme-primary));
 }
 
 .error {
 	color: rgb(var(--v-theme-error));
+	text-align: center;
+}
+
+@media (max-width: 960px) {
+	.card.wide {
+		grid-column: span 1;
+	}
 }
 </style>

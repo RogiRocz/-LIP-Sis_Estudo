@@ -91,3 +91,45 @@ class PainelService:
             )
             for id_revisao, titulo_tema, nome_disciplina in revisoes
         ]
+    
+    async def get_relatorio_detalhado(self, user_id: int):
+        stmt_disc = select(Disciplina).filter(Disciplina.usuario_id == user_id)
+        result_disc = await self.db.execute(stmt_disc)
+        disciplinas = result_disc.scalars().all()
+        
+        relatorio_lista = []
+        total_minutos_geral = 0
+        
+        for disc in disciplinas:
+            stmt_temas = select(Tema).filter(Tema.disciplina_id == disc.ID)
+            result_temas = await self.db.execute(stmt_temas)
+            temas = result_temas.scalars().all()
+            
+            minutos_disc = 0
+            concluidas = 0
+            pendentes = 0
+            
+            for tema in temas:
+                stmt_revs = select(Revisao).filter(Revisao.tema_id == tema.ID)
+                result_revs = await self.db.execute(stmt_revs)
+                revisoes = result_revs.scalars().all()
+                
+                for rev in revisoes:
+                    minutos_disc += (rev.tempo_dedicado or 0)
+                    if rev.status in ['REALIZADA', 'concluida']:
+                        concluidas += 1
+                    else:
+                        pendentes += 1
+            
+            total_minutos_geral += minutos_disc
+            relatorio_lista.append({
+                "subject": disc.nome,
+                "studyMinutes": minutos_disc,
+                "revisionsDone": concluidas,
+                "revisionsPending": pendentes
+            })
+            
+        return {
+            "totalHours": round(total_minutos_geral / 60, 1),
+            "data": relatorio_lista
+        }

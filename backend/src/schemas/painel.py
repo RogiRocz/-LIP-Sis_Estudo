@@ -24,3 +24,13 @@ class PainelData(BaseModel):
     estatisticas: EstatisticasGerais
     evolucao_semanal: list[EvolucaoSemanal]
     revisoes_do_dia: list[RevisaoDoDia]
+
+class RelatorioEstudos(BaseModel):
+    subject: str
+    studyMinutes: int
+    revisionsDone: int
+    revisionsPending: int
+
+class RelatorioGeral(BaseModel):
+    totalHours: float
+    data: list[RelatorioEstudos]
