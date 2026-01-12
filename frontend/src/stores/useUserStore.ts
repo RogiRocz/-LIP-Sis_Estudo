@@ -17,7 +17,9 @@ export const useUserStore = defineStore('userStore', () => {
 	const isDrawerOpen = computed(() => drawerAuth.value)
 	const isAuthenticated = computed(() => !!token.value)
 	const getUser = computed(() => user.value)
-	const isDarkTheme = computed(() => theme.global.name.value === 'dark')
+	const isDarkTheme = computed(() => {
+		return theme?.global?.name?.value === 'dark'
+	})
 	const intervalos = computed(() => user.value?.intervalo_revisoes)
 
 	// Actions
@@ -69,18 +71,20 @@ export const useUserStore = defineStore('userStore', () => {
 	}
 
 	const updateTheme = (themeName: string) => {
-        theme.change(themeName)
-    }
+		theme.change(themeName)
+	}
 
-    const setTheme = async (isDark: boolean) => {
-        const themeName = isDark ? 'dark' : 'light'
-        
-        if (user.value) {
-            user.value.ui_theme = themeName
-        }
+	const setTheme = async (isDark: boolean) => {
+		const themeName = isDark ? 'dark' : 'light'
 
-        updateTheme(themeName)
-    }
+		if (theme?.global) {
+			theme.global.name.value = themeName
+		}
+
+		if (user.value) {
+			user.value.ui_theme = themeName
+		}
+	}
 
 	return {
 		drawerAuth,

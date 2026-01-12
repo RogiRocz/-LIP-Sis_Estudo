@@ -71,43 +71,45 @@ const { setToken, setUser } = userStore
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
 
+// LoginView.vue
 async function handleSubmit() {
-	try {
-		loading.value = true
-		const response = await login({
-			email: email.value,
-			senha: senha.value,
-		})
+    try {
+        loading.value = true
+        
+        // 1. Login no seu Backend (Prioridade máxima)
+        const response = await login({ 
+            email: email.value, 
+            senha: senha.value // Aqui deve ser '123456'
+        })
 
-		if (response && response.token) {
-			setToken(response.token)
-			setUser(response.user)
+        if (response && response.token) {
+            setToken(response.token)
+            setUser(response.user)
 
-			// const { data: sessionData, error: errorSupabase } =
-			// 	await supabase.auth.setSession({
-			// 		access_token: response.token,
-			// 		refresh_token: response.token,
-			// 	})
+            // 2. Tenta conectar ao Supabase (Opcional para o sistema rodar)
+            const { error: sbError } = await supabase.auth.signInWithPassword({
+                email: email.value,
+                password: senha.value, // Deve ser a senha pura '123456'
+            })
 
-			// if (errorSupabase) {
-			// 	console.error('Erro detalhado:', errorSupabase)
-			// 	console.log('Informações da sessão: ', sessionData)
-			// }
+            if (sbError) {
+                console.warn('Realtime não disponível:', sbError.message)
+                addMessage({ 
+                    text: 'Aviso: Funções de tempo real desativadas (Senha do servidor de sync pode estar diferente).', 
+                    color: 'warning' 
+                })
+            } else {
+                const aprendizadoStore = useAprendizadoStore()
+                await aprendizadoStore.setupRealtime()
+            }
 
-			// console.log('Informações da sessão do supabase: ', sessionData)
-
-			const aprendizadoStore = useAprendizadoStore()
-			await aprendizadoStore.setupRealtime()
-
-			router.push({ name: 'home' })
-		}
-	} catch (error) {
-		console.error('Falha ao logar:', error)
-		const message = error.response?.data?.detail || 'Erro interno no servidor'
-		addMessage({ text: message, color: 'error' })
-	} finally {
-		loading.value = false
-	}
+            router.push({ name: 'home' })
+        }
+    } catch (error: any) {
+        addMessage({ text: error.message || 'Erro ao logar', color: 'error' })
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 

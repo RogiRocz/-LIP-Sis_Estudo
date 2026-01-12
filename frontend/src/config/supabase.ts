@@ -6,10 +6,10 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
 export const supabase = createClient(supabaseUrl, supabaseKey, {
 	auth: {
 		// debug: true,
-		persistSession: false,
-		autoRefreshToken: false,
-		storage: window.sessionStorage,
-		detectSessionInUrl: false,
+		persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
 	},
 	realtime: {
 		log_level: 'info',

@@ -1,26 +1,26 @@
 <template>
-  <ViewContainer>
-    <template #view-content>
-      <AuthComponent
-        title="Criar conta"
-        subtitle="Preencha os dados para começar"
-        :inputs="inputs"
-      >
-        <template #submit-form>
-          <v-btn type="submit" :loading="loading" @click.prevent="handleSubmit">
-            Criar Conta
-          </v-btn>
-        </template>
+	<ViewContainer>
+		<template #view-content>
+			<AuthComponent
+				title="Criar conta"
+				subtitle="Preencha os dados para começar"
+				:inputs="inputs"
+			>
+				<template #submit-form>
+					<v-btn type="submit" :loading="loading" @click.prevent="handleSubmit">
+						Criar Conta
+					</v-btn>
+				</template>
 
-        <template #actions>
-          <p align="center">
-            Já tem uma conta?
-            <router-link :to="{ name: 'login' }">Faça login</router-link>
-          </p>
-        </template>
-      </AuthComponent>
-    </template>
-  </ViewContainer>
+				<template #actions>
+					<p align="center">
+						Já tem uma conta?
+						<router-link :to="{ name: 'login' }">Faça login</router-link>
+					</p>
+				</template>
+			</AuthComponent>
+		</template>
+	</ViewContainer>
 </template>
 
 <script setup lang="ts">
@@ -33,12 +33,13 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import {
-  required,
-  validEmail,
-  validPassword,
-  passwordMatch,
+	required,
+	validEmail,
+	validPassword,
+	passwordMatch,
 } from '@/utils/rulesAuth'
 import { register } from '@/api/auth'
+import { supabase } from '@/config/supabase'
 
 const nome = ref('')
 const email = ref('')
@@ -49,40 +50,40 @@ const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 
 const inputs: AuthInput[] = [
-  {
-    name: 'nome',
-    type: 'text',
-    placeholder: 'Nome',
-    model: nome,
-    icon: 'account_circle',
-    rules: [required],
-  },
-  {
-    name: 'email',
-    type: 'email',
-    placeholder: 'E-mail',
-    model: email,
-    icon: 'mail',
-    rules: [required, validEmail],
-  },
-  {
-    name: 'senha',
-    type: 'password',
-    placeholder: 'Senha',
-    model: senha,
-    icon: 'password_2',
-    rules: [required, validPassword],
-    showPassword: showPassword1,
-  },
-  {
-    name: 'confirmar senha',
-    type: 'password',
-    placeholder: 'Confirmar senha',
-    model: confirmarSenha,
-    icon: 'password_2',
-    rules: [required, passwordMatch(senha)],
-    showPassword: showPassword2,
-  },
+	{
+		name: 'nome',
+		type: 'text',
+		placeholder: 'Nome',
+		model: nome,
+		icon: 'account_circle',
+		rules: [required],
+	},
+	{
+		name: 'email',
+		type: 'email',
+		placeholder: 'E-mail',
+		model: email,
+		icon: 'mail',
+		rules: [required, validEmail],
+	},
+	{
+		name: 'senha',
+		type: 'password',
+		placeholder: 'Senha',
+		model: senha,
+		icon: 'password_2',
+		rules: [required, validPassword],
+		showPassword: showPassword1,
+	},
+	{
+		name: 'confirmar senha',
+		type: 'password',
+		placeholder: 'Confirmar senha',
+		model: confirmarSenha,
+		icon: 'password_2',
+		rules: [required, passwordMatch(senha)],
+		showPassword: showPassword2,
+	},
 ]
 
 const router = useRouter()
@@ -95,33 +96,48 @@ const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
 
 async function handleSubmit() {
-  try {
-    loading.value = true
-    const response = await register({
-      nome: nome.value,
-      email: email.value,
-      senha: senha.value,
-      confirmar_senha: confirmarSenha.value,
-    })
+	try {
+		loading.value = true
 
-    if (response && response.token) {
-      setToken(response.token)
-      setUser(response.user)
+		const { data: sbData, error: sbError } = await supabase.auth.signUp({
+			email: email.value,
+			password: senha.value,
+			options: {
+				data: { full_name: nome.value },
+			},
+		})
 
-      router.push({ name: 'disciplina' })
-    }
-  } catch (error) {
-    console.error('Falha ao criar usuário:', error)
-    addMessage({ text: error.response.data.detail, color: 'error' })
-  } finally {
-    loading.value = false
-  }
+		if (sbError) throw sbError
+
+		const response = await register({
+			nome: nome.value,
+			email: email.value,
+			senha: senha.value,
+			confirmar_senha: confirmarSenha.value,
+		})
+
+		if (response && response.token) {
+			setToken(response.token)
+			setUser(response.user)
+
+			addMessage({ text: 'Conta criada com sucesso!', color: 'success' })
+			router.push({ name: 'disciplina' })
+		}
+	} catch (error: any) {
+		console.error('Falha ao criar usuário:', error)
+
+		const errorMsg =
+			error.response?.data?.detail || error.message || 'Erro ao registrar'
+		addMessage({ text: errorMsg, color: 'error' })
+	} finally {
+		loading.value = false
+	}
 }
 </script>
 
 <style scoped>
 a {
-  color: rgb(var(--v-theme-primary));
-  text-decoration: none;
+	color: rgb(var(--v-theme-primary));
+	text-decoration: none;
 }
 </style>
