@@ -71,45 +71,47 @@ const { setToken, setUser } = userStore
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
 
-// LoginView.vue
 async function handleSubmit() {
-    try {
-        loading.value = true
-        
-        // 1. Login no seu Backend (Prioridade máxima)
-        const response = await login({ 
-            email: email.value, 
-            senha: senha.value // Aqui deve ser '123456'
-        })
+	try {
+		loading.value = true
 
-        if (response && response.token) {
-            setToken(response.token)
-            setUser(response.user)
+		const response = await login({
+			email: email.value,
+			senha: senha.value,
+		})
 
-            // 2. Tenta conectar ao Supabase (Opcional para o sistema rodar)
-            const { error: sbError } = await supabase.auth.signInWithPassword({
-                email: email.value,
-                password: senha.value, // Deve ser a senha pura '123456'
-            })
+		if (response && response.token) {
+			setToken(response.token)
+			setUser(response.user)
 
-            if (sbError) {
-                console.warn('Realtime não disponível:', sbError.message)
-                addMessage({ 
-                    text: 'Aviso: Funções de tempo real desativadas (Senha do servidor de sync pode estar diferente).', 
-                    color: 'warning' 
-                })
-            } else {
-                const aprendizadoStore = useAprendizadoStore()
-                await aprendizadoStore.setupRealtime()
-            }
+			const { data, error: sbError } = await supabase.auth.signInWithPassword({
+				email: email.value,
+				password: senha.value,
+			})
 
-            router.push({ name: 'home' })
-        }
-    } catch (error: any) {
-        addMessage({ text: error.message || 'Erro ao logar', color: 'error' })
-    } finally {
-        loading.value = false
-    }
+			if (sbError) {
+				console.error(
+					'Erro detalhado do Supabase:',
+					sbError.status,
+					sbError.message,
+				)
+				addMessage({
+					text: 'Aviso: Funções de tempo real desativadas.',
+					color: 'warning',
+				})
+			} else if (data.session) {
+				console.log('Sessão Supabase iniciada')
+				const aprendizadoStore = useAprendizadoStore()
+				await aprendizadoStore.setupRealtime()
+			}
+
+			router.push({ name: 'home' })
+		}
+	} catch (error: any) {
+		addMessage({ text: error.message || 'Erro ao logar', color: 'error' })
+	} finally {
+		loading.value = false
+	}
 }
 </script>
 

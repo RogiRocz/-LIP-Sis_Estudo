@@ -5,11 +5,12 @@ import { useUserStore } from '@/stores/useUserStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { watch, onMounted, ref } from 'vue'
+import { watch, onMounted, ref, nextTick } from 'vue'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { supabase } from '@/config/supabase'
 import { syncAprendizadoCompleto } from '@/services/AprendizadoService'
 import { useTheme } from 'vuetify'
+import { onBeforeUnmount } from 'vue'
 
 let isRealtimeStarted = false
 
@@ -26,6 +27,13 @@ const isRouterReady = ref(false)
 
 const routesWithoutAppBar = ref(['login', 'cadastro', 'not-found'])
 
+const theme = useTheme()
+const isThemeReady = ref(false)
+
+nextTick(() => {
+	isThemeReady.value = true
+})
+
 watch(route, (newVal) => {
 	if (
 		newVal &&
@@ -41,9 +49,11 @@ watch(route, (newVal) => {
 watch(
 	isAuthenticated,
 	async (val) => {
-		if (val && !isRealtimeStarted) {
+		if (val && !isRealtimeStarted && isThemeReady.value) {
 			isRealtimeStarted = true
-			useAprendizadoStore().setupRealtime()
+			setTimeout(() => {
+				useAprendizadoStore().setupRealtime()
+			}, 1000)
 
 			try {
 				await syncAprendizadoCompleto(1, 12)
@@ -63,28 +73,33 @@ onMounted(async () => {
 		isRouterReady.value = true
 	})
 
-	supabase.auth.onAuthStateChange(async (event, session) => {
-		console.log('Supabase session: ', session)
-		console.log(`Supabase Auth Event: ${event}`)
+	supabase.auth.onAuthStateChange((event, session) => {
+		if (event === 'SIGNED_IN' && session) {
+			const aprendizadoStore = useAprendizadoStore()
+			aprendizadoStore.setupRealtime()
+		}
+		if (event === 'SIGNED_OUT') {
+			userStore.logout()
+		}
 	})
 
 	if (isAuthenticated.value) {
 		await fetchUser()
 	}
 })
+
+onBeforeUnmount(() => supabase.removeAllChannels())
 </script>
 
 <template>
-	<v-app>
+	<v-app v-if="isThemeReady">
 		<NavigationDrawer />
 		<AppBar v-if="isRouterReady && !drawerAuth" />
 		<v-main v-if="isRouterReady" :class="{ 'drawer-auth': drawerAuth }">
 			<router-view v-if="isRouterReady" v-slot="{ Component, route }">
-				<v-fade-trasition mode="out-in">
-					<KeepAlive :max="10">
-						<component :is="Component" :key="route.fullPath" />
-					</KeepAlive>
-				</v-fade-trasition>
+				<KeepAlive :max="10">
+					<component :is="Component" :key="route.fullPath" />
+				</KeepAlive>
 			</router-view>
 		</v-main>
 

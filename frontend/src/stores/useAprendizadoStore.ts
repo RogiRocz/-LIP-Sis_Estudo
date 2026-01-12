@@ -57,6 +57,15 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	}
 
 	const setupRealtime = async () => {
+		const {
+			data: { session },
+		} = await supabase.auth.getSession()
+
+		if (!session) {
+			console.warn('Sem sessão ativa, não é possível criar canal realtime.')
+			return
+		}
+
 		if (activeChannel) {
 			await supabase.removeChannel(activeChannel)
 			activeChannel = null

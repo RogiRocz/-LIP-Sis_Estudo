@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { getProfile } from '@/api/user'
 import router from '@/router'
 import { useTheme } from 'vuetify'
+import { supabase } from '@/config/supabase'
 
 export const useUserStore = defineStore('userStore', () => {
 	// State

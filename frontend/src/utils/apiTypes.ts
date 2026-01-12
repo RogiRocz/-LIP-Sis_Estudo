@@ -1,4 +1,6 @@
 interface Usuario {
+	ID?: number
+	supabase_id?: string
 	nome: string
 	email: string
 	ui_theme: string
