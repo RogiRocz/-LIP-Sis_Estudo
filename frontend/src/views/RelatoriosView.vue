@@ -2,7 +2,7 @@
 	<ViewContainer>
 		<template #view-content>
 			<PageHeader :pageTitle="name" :pageDescription="description">
-				<template #actions>
+				<template #page-header-actions>
 					<v-btn
 						prepend-icon="download"
 						color="primary"
@@ -145,15 +145,18 @@ const barData = computed(() => {
 const chartOptions = { responsive: true, maintainAspectRatio: false }
 
 const exportToCSV = () => {
+	if (sessions.value.length === 0) return
+
 	const headers = [
 		'Disciplina',
-		'Minutos Estudados',
+		'Horas Estudadas',
 		'Revisões Concluídas',
 		'Revisões Pendentes',
 	]
+
 	const rows = sessions.value.map((s) => [
 		s.subject,
-		s.studyMinutes,
+		(s.studyMinutes / 60).toFixed(2),
 		s.revisionsDone,
 		s.revisionsPending,
 	])
@@ -161,15 +164,20 @@ const exportToCSV = () => {
 	const csvContent =
 		'\uFEFF' +
 		[headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+
 	const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
 	const url = URL.createObjectURL(blob)
 	const link = document.createElement('a')
 	link.href = url
 	link.setAttribute(
 		'download',
-		`relatorio_estudos_${new Date().toLocaleDateString()}.csv`,
+		`relatorio_estudos_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`,
 	)
+
+	document.body.appendChild(link)
 	link.click()
+	document.body.removeChild(link)
+	URL.revokeObjectURL(url)
 }
 
 const currentView = computed(() =>
