@@ -31,7 +31,6 @@ const configTab = tabsNavigation.value.find(
 				<v-avatar color="primary" size="32">
 					<span class="text-white font-weight-bold">{{ userInitials }}</span>
 				</v-avatar>
-				<!-- <v-icon class="d-none d-sm-flex">keyboard_arrow_down</v-icon> -->
 			</v-btn>
 		</template>
 

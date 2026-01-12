@@ -3,9 +3,6 @@
 		<template #view-content>
 			<PageHeader :pageTitle="name" :pageDescription="description" />
 			<div class="reports">
-				<!-- <h1>Relatórios</h1> -->
-				<!-- <p class="subtitle">Acompanhe seu desempenho e evolução</p> -->
-
 				<p v-if="loading">Carregando dados...</p>
 				<p v-if="error" class="error">{{ error }}</p>
 
@@ -149,13 +146,10 @@ const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
 </script>
 
-<!-- rgb(var(--v-theme-app-bar-gradient-start)), -->
-<!-- rgb(var(--v-theme-app-bar-gradient-end)) -->
 <style scoped>
 .reports {
 	min-height: 100vh;
 	padding: 32px;
-	/* background: radial-gradient(circle at top left, #1c1c2b, #0b0b0f); */
 	color: rgb(var(--v-theme-secondary));
 	font-family: 'Inter', system-ui, sans-serif;
 }
