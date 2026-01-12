@@ -18,6 +18,7 @@ import {
 } from '@/utils/rulesAuth'
 import { AuthInput } from '@/utils/authInputs'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
+import { generateMockData } from '@/api/seed'
 
 const userStore = useUserStore()
 const { user, isDarkTheme, intervalos } = storeToRefs(userStore)
@@ -97,10 +98,10 @@ const darkModeModel = computed({
 	get: () => isDarkTheme.value,
 	set: async (val) => {
 		try {
-            userStore.setTheme(val)
-        } catch (e) {
-            console.error("Erro ao mudar tema, mas mantendo a interface:", e)
-        }
+			userStore.setTheme(val)
+		} catch (e) {
+			console.error('Erro ao mudar tema, mas mantendo a interface:', e)
+		}
 	},
 })
 
@@ -130,7 +131,43 @@ const cancelarCredenciais = () => {
 	resolvePopup.value?.(false)
 }
 
-const handleSeed = () => {}
+const handleSeed = async () => {
+	const confirmed = await confirmDialogRef.value?.open(
+		'Carregar Dados de Exemplo',
+		'Isso criará disciplinas, temas e revisões fictícias para você explorar a aplicação. Deseja continuar?',
+		'database',
+	)
+
+	if (confirmed) {
+		loading.value = true
+		try {
+			const result = await generateMockData({
+				num_disciplinas: 5,
+				num_temas_por_disciplina: 3,
+				dias_retroceder: 180,
+			})
+
+			snackbarStore.addMessage({
+				text: `Dados criados: ${result.disciplinas_criadas} disciplinas, ${result.temas_criados} temas, ${result.revisoes_criadas} revisões`,
+				color: 'success',
+			})
+
+			// Força recarregar os dados da aplicação
+			setTimeout(() => {
+				window.location.reload()
+			}, 1500)
+		} catch (error: any) {
+			console.error('Erro ao gerar dados:', error)
+			snackbarStore.addMessage({
+				text: error.message || 'Erro ao gerar dados de exemplo',
+				color: 'error',
+			})
+		} finally {
+			loading.value = false
+		}
+	}
+}
+
 const handleSave = async () => {
 	const { valid: formPrincipalValido } = await form.value.validate()
 	if (!formPrincipalValido) return
