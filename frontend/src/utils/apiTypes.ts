@@ -9,9 +9,23 @@ interface Usuario {
 	confirmar_senha?: string
 }
 
-interface AuthResponse {
+interface TokenResponse {
 	token: string
+	refresh_token: string
+	expires_at: string
+	token_type: string
 	user: Usuario
+}
+
+interface RefreshTokenResponse {
+	token: string
+	refresh_token?: string
+	token_type: string
+	expires_at: string
+}
+
+interface RefreshTokenRequest {
+	refresh_token: string
 }
 
 interface PageParams {
@@ -85,7 +99,9 @@ interface SeedResponse {
 
 export type {
 	Usuario,
-	AuthResponse,
+	TokenResponse,
+	RefreshTokenResponse,
+	RefreshTokenRequest,
 	PageParams,
 	Page,
 	Tema,
@@ -95,5 +111,5 @@ export type {
 	EvolucaoSemanal,
 	RevisaoDoDia,
 	SeedRequest,
-	SeedResponse
+	SeedResponse,
 }
