@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from ..models.user import User as UserModel
 from ..schemas.user import UserCreate
+import uuid
 
 class UserRepository:
     def __init__(self, db: AsyncSession):
@@ -12,12 +13,22 @@ class UserRepository:
         result = await self.db.execute(query)
         return result.scalars().first()
 
+    async def get_user_by_supabase_id(self, supabase_id: str) -> UserModel | None:
+        try:
+
+            supabase_uuid = uuid.UUID(supabase_id)
+            query = select(UserModel).where(UserModel.supabase_id == supabase_uuid)
+        except ValueError:
+            query = select(UserModel).where(UserModel.supabase_id == supabase_id)
+        
+        except Exception as e:
+            raise e
+
+        result = await self.db.execute(query)
+        return result.scalars().first()
+
     async def create_user(self, user: UserCreate, hashed_password: str) -> UserModel:
-        db_user = UserModel(
-            email=user.email,
-            senha=hashed_password,
-            nome=user.nome
-        )
+        db_user = UserModel(email=user.email, senha=hashed_password, nome=user.nome)
         self.db.add(db_user)
         await self.db.commit()
         await self.db.refresh(db_user)
