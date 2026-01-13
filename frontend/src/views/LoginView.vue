@@ -66,7 +66,7 @@ const router = useRouter()
 
 const userStore = useUserStore()
 const { loading } = storeToRefs(userStore)
-const { setToken, setUser } = userStore
+const { setTokens, setUser } = userStore
 
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
@@ -80,8 +80,9 @@ async function handleSubmit() {
 			senha: senha.value,
 		})
 
-		if (response && response.token) {
-			setToken(response.token)
+		if (response) {
+			const {token, refresh_token, expires_at} = response
+			setTokens(token, refresh_token, expires_at)
 			setUser(response.user)
 
 			const { data, error: sbError } = await supabase.auth.signInWithPassword({
