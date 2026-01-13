@@ -90,7 +90,7 @@ const router = useRouter()
 
 const userStore = useUserStore()
 const { loading } = storeToRefs(userStore)
-const { setToken, setUser } = userStore
+const { setTokens, setUser } = userStore
 
 const snackbarStore = useSnackbarStore()
 const { addMessage } = snackbarStore
@@ -99,16 +99,6 @@ async function handleSubmit() {
 	try {
 		loading.value = true
 
-		const { data: sbData, error: sbError } = await supabase.auth.signUp({
-			email: email.value,
-			password: senha.value,
-			options: {
-				data: { full_name: nome.value },
-			},
-		})
-
-		if (sbError) throw sbError
-
 		const response = await register({
 			nome: nome.value,
 			email: email.value,
@@ -116,8 +106,9 @@ async function handleSubmit() {
 			confirmar_senha: confirmarSenha.value,
 		})
 
-		if (response && response.token) {
-			setToken(response.token)
+		if (response) {
+			const {token, refresh_token, expires_at} = response
+			setTokens(token, refresh_token, expires_at)
 			setUser(response.user)
 
 			addMessage({ text: 'Conta criada com sucesso!', color: 'success' })
