@@ -92,5 +92,5 @@ class TemaService:
         await self.repo.delete_tema(db_tema)
 
     async def get_revisoes_by_tema(self, tema_id: int, user_id: int) -> List[RevisaoModel]:
-        await self.get_tema(tema_id, user_id)  # Validate theme ownership
+        await self.get_tema(tema_id, user_id)
         return await self.repo.get_revisoes_by_tema(tema_id, user_id)
