@@ -50,7 +50,9 @@ def create_tokens(
 
     if "sub" not in access_token_data:
         access_token_data["sub"] = str(
-            user_data.get("ID") or user_data.get("supabase_id") or user_data.get("email")
+            user_data.get("ID")
+            or user_data.get("supabase_id")
+            or user_data.get("email")
         )
 
     access_token = jwt.encode(
@@ -163,9 +165,6 @@ async def get_current_user(
         supabase_id_str = payload.get("sub")
         email = payload.get("email")
 
-        print(f"DEBUG: supabase_id do token: {supabase_id_str}")
-        print(f"DEBUG: email do token: {email}")
-
         if not supabase_id_str or supabase_id_str == "None":
             raise credentials_exception
 
@@ -173,7 +172,6 @@ async def get_current_user(
             supabase_uuid = uuid.UUID(supabase_id_str)
         except ValueError:
 
-            print(f"DEBUG: supabase_id não é UUID válido: {supabase_id_str}")
             supabase_uuid = None
 
         user = None
@@ -191,19 +189,15 @@ async def get_current_user(
             if user and supabase_uuid and not user.supabase_id:
                 user.supabase_id = supabase_uuid
                 await db.commit()
-                print(f"DEBUG: Atualizado supabase_id para usuário {email}")
 
         if not user:
-            print(
-                f"DEBUG: Usuário não encontrado (supabase_id: {supabase_id_str}, email: {email})"
-            )
             raise credentials_exception
 
         return user
 
     except JWTError as e:
-        print(f"DEBUG: Erro JWT: {e}")
+
         raise credentials_exception
     except Exception as e:
-        print(f"DEBUG: Erro inesperado: {e}")
+
         raise credentials_exception
