@@ -39,7 +39,7 @@ async def seed_data():
 
     db = SessionLocal()
     try:
-        # --- User ---
+
         print("Criando usuário de teste...")
         user = User(
             nome="Usuário de Teste",
@@ -51,20 +51,24 @@ async def seed_data():
         db.add(user)
         await db.flush()
 
-        # --- NOVO: Vínculo Automático com o Auth do Supabase ---
-        # Isso evita que você precise rodar SQL manual toda vez
-        res = await db.execute(text("""
+        res = await db.execute(
+            text(
+                """
             SELECT id FROM auth.users WHERE email = :email
-        """), {"email": user.email})
+        """
+            ),
+            {"email": user.email},
+        )
         supabase_uuid = res.scalar()
 
         if supabase_uuid:
             user.supabase_id = supabase_uuid
             print(f"Vínculo com Supabase UUID {supabase_uuid} estabelecido.")
         else:
-            print("AVISO: Usuário 'teste@exemplo.com' não encontrado no Auth do Supabase. O RLS não funcionará.")
+            print(
+                "AVISO: Usuário 'teste@exemplo.com' não encontrado no Auth do Supabase. O RLS não funcionará."
+            )
 
-        # --- Knowledge Base for Seeding ---
         disciplinas_data = {
             "Cálculo I": "Estudo de limites, derivadas e integrais.",
             "Estrutura de Dados": "Implementação de estruturas como grafos e árvores.",
@@ -129,7 +133,6 @@ async def seed_data():
             "Relatividade Especial": "Teoria de Einstein sobre espaço, tempo e gravidade.",
         }
 
-        # --- Create Disciplinas ---
         print("Criando disciplinas...")
         disciplinas = []
         for nome, desc in disciplinas_data.items():
@@ -141,10 +144,9 @@ async def seed_data():
         db.add_all(disciplinas)
         await db.flush()
 
-        # --- Simulate a Year of Study ---
         print("Simulando um ano de estudos com dados tematicamente consistentes...")
         today = date.today()
-        for _ in range(150):  # Create 150 themes
+        for _ in range(150):
             current_date = today - timedelta(days=random.randint(0, 365))
             disciplina_aleatoria = random.choice(disciplinas)
 
@@ -159,14 +161,13 @@ async def seed_data():
                     descricao=descricao_especifica,
                     disciplina_id=disciplina_aleatoria.ID,
                 )
-                # Manually set creation date for simulation. Convert date to datetime.
+
                 novo_tema.criado_em = datetime.combine(
                     current_date, datetime.min.time()
                 )
                 db.add(novo_tema)
                 await db.flush()
 
-                # --- Generate Revisions ---
                 revision_intervals = [
                     int(i) for i in user.intervalo_revisoes.split(",")
                 ]
