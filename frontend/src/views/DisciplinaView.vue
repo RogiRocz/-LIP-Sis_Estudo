@@ -36,6 +36,7 @@ const currentView = computed(() =>
 )
 const name = computed(() => currentView.value?.name || '')
 const description = computed(() => currentView.value?.description || '')
+const hasContent = computed(() => disciplinas.value.length > 0)
 
 const carregarDados = async (newPage: number) => {
 	try {
@@ -103,7 +104,7 @@ onMounted(async () => {
 				</template>
 			</PageHeader>
 			<MainContainer v-if="!loading">
-				<template #main-content>
+				<template v-if="hasContent" #main-content>
 					<v-row>
 						<v-col
 							v-for="d in disciplinas.slice(0, itensPerPage)"
@@ -128,6 +129,14 @@ onMounted(async () => {
 						v-model="page"
 						:length="totalPages"
 					></v-pagination>
+				</template>
+				<template v-else #main-content>
+					<v-alert
+						title="Sem disciplinas"
+						text="Você não tem nenhuma disciplina para mostrar algum conteúdo"
+						type="error"
+						variant="tonal"
+					></v-alert>
 				</template>
 			</MainContainer>
 			<div class="page-loading" v-if="loading">
