@@ -112,6 +112,20 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		return activeChannel
 	}
 
+	const cleanupRealtime = async () => {
+		if (activeChannel) {
+			await supabase.removeChannel(activeChannel)
+			activeChannel = null
+		}
+	}
+
+	supabase.auth.onAuthStateChange((event) => {
+		if (event === 'SIGNED_OUT') {
+			cleanupRealtime()
+			reset()
+		}
+	})
+
 	return {
 		disciplinas,
 		temas,
@@ -127,6 +141,7 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		setRevisoes,
 		reset,
 		setupRealtime,
+		cleanupRealtime,
 		setPage,
 		totalPages,
 	}
