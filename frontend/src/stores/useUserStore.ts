@@ -4,13 +4,19 @@ import { computed, ref } from 'vue'
 import { getProfile } from '@/api/user'
 import router from '@/router'
 import { useTheme } from 'vuetify'
-import { supabase } from '@/config/supabase'
+
+const ThemeMap = {
+	claro: 'light',
+	escuro: 'dark',
+} as const
 
 export const useUserStore = defineStore('userStore', () => {
 	// State
 	const drawerAuth = ref(false)
 	const loading = ref(false)
 	const token = ref(localStorage.getItem('authToken') || null)
+	const refresh_token = ref(localStorage.getItem('refreshToken') || null)
+	const expires_at = ref(localStorage.getItem('expiresAt') || null)
 	const user = ref<Usuario | null>(null)
 	const theme = useTheme()
 
@@ -28,12 +34,21 @@ export const useUserStore = defineStore('userStore', () => {
 		drawerAuth.value = !drawerAuth.value
 	}
 
-	const setToken = (newToken: string | null) => {
+	const setTokens = (
+		newToken: string | null,
+		newRefreshToken: string | null,
+		newExpiresAt: string | null,
+	) => {
 		token.value = newToken
+		refresh_token.value = newRefreshToken
+		expires_at.value = newExpiresAt
+
 		if (newToken) {
 			localStorage.setItem('authToken', newToken)
+			if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken)
+			if (newExpiresAt) localStorage.setItem('expiresAt', newExpiresAt)
 		} else {
-			localStorage.removeItem('authToken')
+			logout()
 		}
 	}
 
@@ -47,8 +62,14 @@ export const useUserStore = defineStore('userStore', () => {
 
 	const logout = () => {
 		localStorage.removeItem('authToken')
+		localStorage.removeItem('refreshToken')
+		localStorage.removeItem('expiresAt')
+
 		token.value = null
+		refresh_token.value = null
+		expires_at.value = null
 		user.value = null
+
 		router.replace({ name: 'login' })
 	}
 
@@ -59,7 +80,10 @@ export const useUserStore = defineStore('userStore', () => {
 				setUser(userData)
 
 				if (userData?.ui_theme) {
-					theme.global.name.value = userData.ui_theme
+					const theme = ThemeMap[userData.ui_theme]
+					console.log('tema passado no fetch user: ', theme)
+
+					theme.global.name.value = theme
 				}
 			} catch (error) {
 				console.error(
@@ -92,7 +116,9 @@ export const useUserStore = defineStore('userStore', () => {
 		loading,
 		token,
 		user,
-		setToken,
+		setTokens,
+		refresh_token,
+		expires_at,
 		setUser,
 		isAuthenticated,
 		getUser,
