@@ -5,12 +5,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-# Adiciona o diretório 'backend' ao path do Python.
-# Isso permite que 'src' seja tratado como um pacote e as importações relativas
-# dentro dele (como em database.py) funcionem corretamente.
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# Agora, importa a Base e os modelos usando 'src' como o pacote de nível superior
 from src.database import Base
 from src.models.user import User
 from src.models.disciplina import Disciplina
@@ -25,8 +21,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Aponta o target_metadata para o metadata da Base dos seus modelos
 target_metadata = Base.metadata
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
