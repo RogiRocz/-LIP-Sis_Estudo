@@ -23,11 +23,9 @@ async function login(userData: any): Promise<TokenResponse> {
 	}
 }
 
-async function refresh_token(refresh_token: any): Promise<RefreshTokenResponse> {
+async function refresh_token(userData: any): Promise<RefreshTokenResponse> {
 	try {
-		const response = await api.post(`${resourceUrl}/refresh`, {
-			refresh_token:  refresh_token
-		})
+		const response = await api.post(`${resourceUrl}/refresh`, userData)
 		return response.data
 	} catch (error) {
 		console.error('Erro ao atualizar token: ', error)
@@ -35,4 +33,13 @@ async function refresh_token(refresh_token: any): Promise<RefreshTokenResponse> 
 	}
 }
 
-export { register, login, refresh_token }
+async function closeSessionSupabase(token: string): Promise<void> {
+	try {
+		await api.post(`${resourceUrl}/logout`, token)
+	} catch (error) {
+		console.error('Erro ao deslogar da conta: ', error)
+		throw error
+	}
+}
+
+export { register, login, refresh_token, closeSessionSupabase }
