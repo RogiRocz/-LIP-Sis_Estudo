@@ -81,13 +81,18 @@ async function handleSubmit() {
 		})
 
 		if (response) {
-			const {token, refresh_token, expires_at} = response
+			const { token, refresh_token, expires_at } = response
 			setTokens(token, refresh_token, expires_at)
 			setUser(response.user)
 
-			const { data, error: sbError } = await supabase.auth.signInWithPassword({
-				email: email.value,
-				password: senha.value,
+			const { data, error: sbError } = await supabase.auth.setSession({
+				access_token: token,
+				refresh_token: refresh_token,
+			})
+
+			console.log('Dados pra debug: ', {
+				response,
+				data,
 			})
 
 			if (sbError) {
@@ -96,20 +101,30 @@ async function handleSubmit() {
 					sbError.status,
 					sbError.message,
 				)
-				addMessage({
-					text: 'Aviso: Funções de tempo real desativadas.',
-					color: 'warning',
+				const session = await supabase.auth.signInWithPassword({
+					email: email.value,
+					password: senha.value,
 				})
+				console.log('Nova tentiva de conexão de sessão: ', session)
+
+				if (session.error) {
+					addMessage({
+						text: 'Aviso: Funções de tempo real desativadas.',
+						color: 'warning',
+					})
+				}
 			} else if (data.session) {
 				console.log('Sessão Supabase iniciada')
-				const aprendizadoStore = useAprendizadoStore()
-				await aprendizadoStore.setupRealtime()
+				console.log('Info da sessão do supabase: ', data.session)
 			}
 
-			router.push({ name: 'home' })
+			router.replace({ name: 'home' })
 		}
 	} catch (error: any) {
-		addMessage({ text: error.message || 'Erro ao logar', color: 'error' })
+		addMessage({
+			text: error.response.data.detail || 'Erro ao logar',
+			color: 'error',
+		})
 	} finally {
 		loading.value = false
 	}
