@@ -25,6 +25,7 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     ui_theme: str
     intervalo_revisoes: List[int]
+    supabase_id: Optional[str] = None
 
     class Config:
         from_attributes = True
