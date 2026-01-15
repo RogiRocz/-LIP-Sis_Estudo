@@ -153,9 +153,7 @@ const handleSeed = async () => {
 			})
 
 			// Força recarregar os dados da aplicação
-			setTimeout(() => {
-				window.location.reload()
-			}, 1500)
+			window.location.reload()
 		} catch (error: any) {
 			console.error('Erro ao gerar dados:', error)
 			snackbarStore.addMessage({
