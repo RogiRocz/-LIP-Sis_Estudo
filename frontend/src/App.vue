@@ -15,7 +15,7 @@ import { onBeforeUnmount } from 'vue'
 let isRealtimeStarted = false
 
 const userStore = useUserStore()
-const { drawerAuth, isAuthenticated, user } = storeToRefs(userStore)
+const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
 const { fetchUser } = userStore
 
 const snackbarStore = useSnackbarStore()
@@ -51,9 +51,8 @@ watch(
 	async (val) => {
 		if (val && !isRealtimeStarted && isThemeReady.value) {
 			isRealtimeStarted = true
-			setTimeout(() => {
-				useAprendizadoStore().setupRealtime()
-			}, 1000)
+
+			useAprendizadoStore().setupRealtime()
 
 			try {
 				await syncAprendizadoCompleto(1, 12)
@@ -71,16 +70,6 @@ watch(
 onMounted(async () => {
 	router.isReady().then(() => {
 		isRouterReady.value = true
-	})
-
-	supabase.auth.onAuthStateChange((event, session) => {
-		if (event === 'SIGNED_IN' && session) {
-			const aprendizadoStore = useAprendizadoStore()
-			aprendizadoStore.setupRealtime()
-		}
-		if (event === 'SIGNED_OUT') {
-			userStore.logout()
-		}
 	})
 
 	if (isAuthenticated.value) {
