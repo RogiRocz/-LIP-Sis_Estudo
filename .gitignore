@@ -1,6 +1,11 @@
 # Dependencies
 node_modules
 
+# Enviroment
+.env
+**/.env
+
+
 # Build files
 /dist
 
