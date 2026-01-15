@@ -2,12 +2,17 @@ import { Usuario } from '@/utils/apiTypes'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { getProfile } from '@/api/user'
-import router from '@/router'
 import { useTheme } from 'vuetify'
+import { DEFAULT_THEME } from '@/config/vuetify'
+import router from '@/router'
+import { supabase } from '@/config/supabase'
+import { closeSessionSupabase } from '@/api/auth'
 
 const ThemeMap = {
 	claro: 'light',
 	escuro: 'dark',
+	light: 'light',
+	dark: 'dark',
 } as const
 
 export const useUserStore = defineStore('userStore', () => {
@@ -55,12 +60,26 @@ export const useUserStore = defineStore('userStore', () => {
 	const setUser = (newUser: Usuario | null) => {
 		if (newUser) {
 			user.value = newUser
+			const userTheme = ThemeMap[user.value.ui_theme]
+			updateTheme(userTheme)
 		} else {
 			user.value = null
+			updateTheme(ThemeMap[DEFAULT_THEME])
+		}
+	}
+
+	const signOutSupabase = async () => {
+		try {
+			await closeSessionSupabase(token.value)
+			await supabase.auth.signOut()
+		} catch (error) {
+			console.error('Erro ao fazer logout no Supabase:', error)
 		}
 	}
 
 	const logout = () => {
+		signOutSupabase()
+
 		localStorage.removeItem('authToken')
 		localStorage.removeItem('refreshToken')
 		localStorage.removeItem('expiresAt')
@@ -69,8 +88,10 @@ export const useUserStore = defineStore('userStore', () => {
 		refresh_token.value = null
 		expires_at.value = null
 		user.value = null
-
+		
 		router.replace({ name: 'login' })
+
+		updateTheme(ThemeMap[DEFAULT_THEME])
 	}
 
 	const fetchUser = async () => {
@@ -78,13 +99,6 @@ export const useUserStore = defineStore('userStore', () => {
 			try {
 				const userData = await getProfile()
 				setUser(userData)
-
-				if (userData?.ui_theme) {
-					const theme = ThemeMap[userData.ui_theme]
-					console.log('tema passado no fetch user: ', theme)
-
-					theme.global.name.value = theme
-				}
 			} catch (error) {
 				console.error(
 					'Falha ao buscar usuário. Token pode ser inválido.',
