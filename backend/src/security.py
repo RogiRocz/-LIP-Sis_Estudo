@@ -25,12 +25,10 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def create_tokens(
+def create_token(
     user_data: dict,
     access_token_expires_minutes: Optional[int] = None,
-    refresh_token_expires_days: int = 7,
-) -> Tuple[str, str, datetime]:
-    Retorna: (access_token, refresh_token, expires_at)
+) -> Tuple[str, datetime]:
 
     if access_token_expires_minutes is None:
         access_token_expires_minutes = settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -41,39 +39,19 @@ def create_tokens(
     access_token_data = user_data.copy()
     access_token_data.update(
         {
-            "exp": access_token_expires_at,
+            "exp": int(access_token_expires_at.timestamp()),
             "token_type": "access",
             "aud": "authenticated",
             "role": "authenticated",
         }
     )
 
-    if "sub" not in access_token_data:
-        access_token_data["sub"] = str(
-            user_data.get("ID")
-            or user_data.get("supabase_id")
-            or user_data.get("email")
-        )
-
     access_token = jwt.encode(
         access_token_data, settings.SUPABASE_JWT_SECRET, algorithm="HS256"
     )
 
-    refresh_token_expires = timedelta(days=refresh_token_expires_days)
-    refresh_token_expires_at = datetime.now(timezone.utc) + refresh_token_expires
-
-    refresh_token_data = {
-        "sub": access_token_data["sub"],
-        "exp": refresh_token_expires_at,
-        "token_type": "refresh",
-        "jti": str(uuid.uuid4()),
-    }
-
-    refresh_token = jwt.encode(
-        refresh_token_data, settings.SUPABASE_JWT_SECRET, algorithm="HS256"
-    )
-
-    return access_token, refresh_token, access_token_expires_at
+    
+    return access_token, access_token_expires_at
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -114,26 +92,30 @@ def verify_token(token: str, token_type: str = "access") -> dict:
         raise e
 
 
-def refresh_access_token(refresh_token: str) -> Tuple[str, datetime]:
+def refresh_access_token(user_data: User, supabase_user: dict) -> Tuple[str, datetime]:
     try:
-
-        payload = verify_token(refresh_token, "refresh")
-
-        supabase_id = payload.get("sub")
+        supabase_id = user_data.supabase_id
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token_expires_at = datetime.now(timezone.utc) + access_token_expires
 
-        access_token_data = {
+        token_data = {
+            "iss": f"{settings.SUPABASE_URL}/auth/v1",
+            "session_id": str(uuid.uuid4()),
             "sub": supabase_id,
-            "token_type": "access",
-            "aud": "authenticated",
+            "email": user_data.email,
+            "nome": user_data.nome,
+            "phone": supabase_user.phone | "",
+            "aal": "aal1",
+            "iat": int(datetime.now(timezone.utc).timestamp()),
             "role": "authenticated",
-            "exp": access_token_expires_at,
+            "aud": "authenticated",
+            "exp": int(access_token_expires_at.timestamp()),
+            "is_anonymous": supabase_user.is_anonymous | False,
         }
 
         access_token = jwt.encode(
-            access_token_data, settings.SUPABASE_JWT_SECRET, algorithm="HS256"
+            token_data, settings.SUPABASE_JWT_SECRET, algorithm="HS256"
         )
 
         return access_token, access_token_expires_at
