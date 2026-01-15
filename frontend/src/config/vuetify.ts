@@ -11,8 +11,11 @@ import * as LabsComponentes from 'vuetify/labs/components'
  * secondary: 667eea (Roxo Mais Claro)
  * gradient_end: 764ba2 (Roxo Mais Escuro - Para o App Bar)
  */
+
+export const DEFAULT_THEME = 'light'
+
 const StudyFlowTheme = {
-	defaultTheme: 'light',
+	defaultTheme: DEFAULT_THEME,
 
 	themes: {
 		dark: {
