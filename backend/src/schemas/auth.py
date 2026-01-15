@@ -10,6 +10,13 @@ class Token(BaseModel):
     token_type: str
     user: User
 
+class TokenLogout(Token):
+    token: str
+    refresh_token: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    token_type: Optional[str] = None
+    user: Optional[User] = None
+
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
