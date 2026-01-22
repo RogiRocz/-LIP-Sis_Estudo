@@ -19,8 +19,8 @@ async def login(user: UserLogin, service: AuthService = Depends()):
 
 
 @router.post("/refresh", response_model=RefreshTokenResponse)
-async def refresh_token(user: UserLogin, service: AuthService = Depends()):
-    return await service.refresh(user)
+async def refresh_token(refresh_token: RefreshTokenRequest, service: AuthService = Depends()):
+    return await service.refresh(refresh_token.refresh_token)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
