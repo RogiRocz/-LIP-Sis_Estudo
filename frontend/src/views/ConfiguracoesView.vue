@@ -98,7 +98,7 @@ const darkModeModel = computed({
 	get: () => isDarkTheme.value,
 	set: async (val) => {
 		try {
-			userStore.setTheme(val)
+			userStore.updateTheme(val ? 'dark' : 'light')
 		} catch (e) {
 			console.error('Erro ao mudar tema, mas mantendo a interface:', e)
 		}
