@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 from ..database import get_db
 from ..repositories.user import UserRepository
 from ..schemas.user import UserCreate, UserLogin, User
@@ -253,10 +254,22 @@ class AuthService:
             raise HTTPException(status_code=401, detail=f"Falha ao atualizar token. {str(e)}")
 
     async def logout(self, token: str):
-        # Aplicar verificação se o token é do usuário que fez a requisição
         try:
-            supabase.auth.sign_out(token)
+            payload = verify_token(token)
+            session_id = payload.get('claims', {}).get('session_id') or payload.get('session_id')
+
+            if not session_id:
+                raise Exception("Session ID não encontrado no token")
+
+            query = text("DELETE FROM auth.sessions WHERE id = :session_id")
+        
+            await self.db.execute(query, {"session_id": session_id})
+            await self.db.commit()
         except Exception as e:
+            if "session_not_found" in str(e).lower():
+                return {"status": "success", "message": "Sessão já invalidada"}
+
+            print(f"DEBUG LOGOUT ERROR: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"Token inválido para deslogar: {str(e)}",
