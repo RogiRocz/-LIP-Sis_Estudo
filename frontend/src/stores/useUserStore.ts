@@ -6,6 +6,7 @@ import { DEFAULT_THEME } from '@/config/vuetify'
 import router from '@/router'
 import { supabase } from '@/config/supabase'
 import { closeSessionSupabase } from '@/api/auth'
+import { useAprendizadoStore } from './useAprendizadoStore'
 
 const ThemeMap = {
 	claro: 'light',
@@ -15,7 +16,6 @@ const ThemeMap = {
 } as const
 
 export const useUserStore = defineStore('userStore', () => {
-	// State
 	const drawerAuth = ref(false)
 	const loading = ref(false)
 	const token = ref(localStorage.getItem('authToken') || null)
@@ -24,14 +24,14 @@ export const useUserStore = defineStore('userStore', () => {
 	const user = ref<Usuario | null>(null)
 	const currentThemeName = ref('light')
 
-	// Getters
 	const isDrawerOpen = computed(() => drawerAuth.value)
 	const isAuthenticated = computed(() => !!token.value)
 	const getUser = computed(() => user.value)
 	const isDarkTheme = computed(() => currentThemeName.value === 'dark')
 	const intervalos = computed(() => user.value?.intervalo_revisoes)
 
-	// Actions
+	const aprendizadoStore = useAprendizadoStore()
+
 	const toggleDrawerAuth = () => {
 		drawerAuth.value = !drawerAuth.value
 	}
@@ -46,7 +46,7 @@ export const useUserStore = defineStore('userStore', () => {
 		expires_at.value = newExpiresAt
 
 		if (newToken) {
-			localStorage.setItem('authToken', newToken)	
+			localStorage.setItem('authToken', newToken)
 			if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken)
 			if (newExpiresAt) localStorage.setItem('expiresAt', newExpiresAt)
 		} else {
@@ -67,16 +67,39 @@ export const useUserStore = defineStore('userStore', () => {
 
 	const signOutSupabase = async () => {
 		try {
-			await closeSessionSupabase(token.value)
-			await supabase.auth.signOut()
+			if (token.value) {
+				await closeSessionSupabase(token.value)
+			}
 		} catch (error) {
-			console.error('Erro ao fazer logout no Supabase:', error)
+			console.warn('Sessão já invalidada no backend.')
+		} finally {
+			Object.keys(localStorage).forEach(key => {
+				if (key.includes('auth-token')) {
+					localStorage.removeItem(key);
+				}
+			});
+	
+			
+			if (supabase.auth.getSession()) {
+				supabase.auth.setSession({
+					access_token: '',
+					refresh_token: '',					
+				})
+			}
+
+			try {
+				await supabase.auth.signOut()
+			} catch (e) {}
+
 		}
 	}
 
 	const logout = () => {
 		signOutSupabase()
 
+    	aprendizadoStore.reset()
+
+		localStorage.removeItem('aprendizadoStore')
 		localStorage.removeItem('authToken')
 		localStorage.removeItem('refreshToken')
 		localStorage.removeItem('expiresAt')
