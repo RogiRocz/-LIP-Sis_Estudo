@@ -5,34 +5,40 @@ import { useUserStore } from '@/stores/useUserStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { watch, onMounted, ref, nextTick } from 'vue'
+import { watch, onMounted, ref, nextTick, computed } from 'vue'
 import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { supabase } from '@/config/supabase'
 import { syncAprendizadoCompleto } from '@/services/AprendizadoService'
-import { useTheme } from 'vuetify'
 import { onBeforeUnmount } from 'vue'
+import { useTheme } from 'vuetify'
 
 let isRealtimeStarted = false
 
 const userStore = useUserStore()
-const { drawerAuth, isAuthenticated } = storeToRefs(userStore)
+const { drawerAuth, isAuthenticated, currentThemeName } = storeToRefs(userStore)
 const { fetchUser } = userStore
 
 const snackbarStore = useSnackbarStore()
 const { messages } = storeToRefs(snackbarStore)
 
+const theme = useTheme()
 const route = useRoute()
 const router = useRouter()
 const isRouterReady = ref(false)
 
 const routesWithoutAppBar = ref(['login', 'cadastro', 'not-found'])
 
-const theme = useTheme()
-const isThemeReady = ref(false)
-
-nextTick(() => {
-	isThemeReady.value = true
+const noAppBarRoutes = computed(() => {
+	return route.name && routesWithoutAppBar.value.includes(route.name as string)
 })
+
+watch(
+	() => route.name,
+	(name) => {
+		drawerAuth.value = routesWithoutAppBar.value.includes(name as string)
+	},
+	{ immediate: true },
+)
 
 watch(route, (newVal) => {
 	if (
@@ -49,7 +55,7 @@ watch(route, (newVal) => {
 watch(
 	isAuthenticated,
 	async (val) => {
-		if (val && !isRealtimeStarted && isThemeReady.value) {
+		if (val && !isRealtimeStarted) {
 			isRealtimeStarted = true
 
 			useAprendizadoStore().setupRealtime()
@@ -62,6 +68,16 @@ watch(
 		} else if (!val) {
 			isRealtimeStarted = false
 			supabase.removeAllChannels()
+		}
+	},
+	{ immediate: true },
+)
+
+watch(
+	currentThemeName,
+	(newName) => {
+		if (theme.global) {
+			theme.global.name.value = newName
 		}
 	},
 	{ immediate: true },
@@ -81,11 +97,13 @@ onBeforeUnmount(() => supabase.removeAllChannels())
 </script>
 
 <template>
-	<v-app v-if="isThemeReady">
-		<NavigationDrawer />
-		<AppBar v-if="isRouterReady && !drawerAuth" />
-		<v-main v-if="isRouterReady" :class="{ 'drawer-auth': drawerAuth }">
-			<router-view v-if="isRouterReady" v-slot="{ Component, route }">
+	<v-app>
+		<template v-if="!noAppBarRoutes">
+			<NavigationDrawer />
+			<AppBar />
+		</template>
+		<v-main :class="{ 'drawer-auth': noAppBarRoutes }">
+			<router-view v-slot="{ Component, route }">
 				<KeepAlive :max="10">
 					<component :is="Component" :key="route.fullPath" />
 				</KeepAlive>
