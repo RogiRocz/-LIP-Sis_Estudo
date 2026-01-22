@@ -3,15 +3,22 @@
 		<template #view-content>
 			<PageHeader :pageTitle="name" :pageDescription="description">
 				<template #page-header-actions>
-					<v-btn
-						prepend-icon="download"
-						color="primary"
-						variant="tonal"
-						:disabled="loading || sessions.length === 0"
-						@click="exportToCSV"
-					>
-						Exportar CSV
-					</v-btn>
+					<v-hover>
+						<template #default="{isHovering, props}">
+
+							<v-btn
+							v-bind="props"
+								prepend-icon="download"
+								color="primary"
+								:variant="isHovering? 'elevated': 'outlined'"
+								:disabled="loading || sessions.length === 0"
+								@click="exportToCSV"
+							>
+								Exportar CSV
+							</v-btn>
+						</template>
+						
+					</v-hover>
 				</template>
 			</PageHeader>
 
