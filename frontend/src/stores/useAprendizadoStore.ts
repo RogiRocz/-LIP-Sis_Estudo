@@ -1,7 +1,7 @@
 import { supabase } from '@/config/supabase'
 import { Disciplina, Revisao, Tema } from '@/utils/apiTypes'
 import { syncArray, syncMap } from '@/utils/SyncSupabase'
-import { defineStore } from 'pinia'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
@@ -145,6 +145,10 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		setPage,
 		totalPages,
 	}
+}, {
+	persist: {
+		pick: ['disciplinas', 'temas', 'revisoes', 'currPage', 'itensPerPage', 'totalItems', 'loading']
+	}
 })
 
 let activeChannel: any = null
@@ -154,4 +158,6 @@ if (import.meta.hot) {
 		await supabase.removeAllChannels()
 		console.log('HMR: Canais do Supabase limpos para evitar duplicidade.')
 	})
+
+	import.meta.hot.accept(acceptHMRUpdate(useAprendizadoStore, import.meta.hot))
 }
