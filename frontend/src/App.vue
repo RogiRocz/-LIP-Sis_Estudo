@@ -12,14 +12,15 @@ import { syncAprendizadoCompleto } from '@/services/AprendizadoService'
 import { onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
 
-let isRealtimeStarted = false
-
 const userStore = useUserStore()
 const { drawerAuth, isAuthenticated, currentThemeName } = storeToRefs(userStore)
 const { fetchUser } = userStore
 
 const snackbarStore = useSnackbarStore()
 const { messages } = storeToRefs(snackbarStore)
+
+const aprendizadoStore = useAprendizadoStore()
+const { isRealtimeConnected } = storeToRefs(aprendizadoStore)
 
 const theme = useTheme()
 const route = useRoute()
@@ -53,11 +54,9 @@ watch(route, (newVal) => {
 })
 
 watch(
-	isAuthenticated,
-	async (val) => {
-		if (val && !isRealtimeStarted) {
-			isRealtimeStarted = true
-
+	[isAuthenticated, isRealtimeConnected],
+	async ([auth, connected]) => {
+		if (auth && !connected) {
 			useAprendizadoStore().setupRealtime()
 
 			try {
@@ -65,9 +64,9 @@ watch(
 			} catch (e) {
 				console.error('Falha na carga inicial de aprendizado completo.')
 			}
-		} else if (!val) {
-			isRealtimeStarted = false
-			supabase.removeAllChannels()
+		} else if (!auth) {
+			aprendizadoStore.cleanupRealtime()
+			aprendizadoStore.reset()
 		}
 	},
 	{ immediate: true },
