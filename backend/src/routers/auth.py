@@ -24,11 +24,12 @@ async def refresh_token(refresh_token: RefreshTokenRequest, service: AuthService
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(token: TokenLogout, service: AuthService = Depends()):
+async def logout(req: TokenLogout, service: AuthService = Depends()):
     try:
-        await service.logout(token.token)
+        await service.logout(req.token)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+        
     return Response(status_code=status.HTTP_204_NO_CONTENT)
