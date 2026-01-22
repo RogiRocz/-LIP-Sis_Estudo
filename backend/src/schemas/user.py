@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, UUID4
 from typing import Optional, List
 from datetime import datetime
 
@@ -25,7 +25,7 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     ui_theme: str
     intervalo_revisoes: List[int]
-    supabase_id: Optional[str] = None
+    supabase_id: Optional[UUID4] = None
 
     class Config:
         from_attributes = True
