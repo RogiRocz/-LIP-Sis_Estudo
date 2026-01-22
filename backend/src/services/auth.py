@@ -15,6 +15,14 @@ from ..core.config import settings
 from ..core.supabase_client import supabase
 from datetime import datetime, timezone
 import uuid
+from jose import jwt
+
+CURRENT_KID = None
+
+
+def get_kid_from_supabase_token(token: str):
+    unverified_header = jwt.get_unverified_header(token)
+    return unverified_header.get("kid")
 
 
 class AuthService:
@@ -64,30 +72,56 @@ class AuthService:
 
         await self.user_repo.update_user(db_user)
 
+        global CURRENT_KID
+
         try:
-            refresh_token_supabase = supabase.auth.sign_in_with_password(
+            auth_response = supabase.auth.sign_in_with_password(
                 {"email": user_data.email, "password": user_data.senha}
-            ).session.refresh_token
+            )
+
+            refresh_token_supabase = auth_response.session.refresh_token
+            access_token_supabase = auth_response.session.access_token
+            official_claims = supabase.auth.get_claims(access_token_supabase)
+            CURRENT_KID = get_kid_from_supabase_token(access_token_supabase)
 
         except Exception as e:
             print(f"Erro ao fazer login no Supabase: {e}")
             raise e
 
-        token_data = {
-            "iss": f"{settings.SUPABASE_URL}/auth/v1",
-            "session_id": str(uuid.uuid4()),
-            "sub": supabase_id,
-            "email": db_user.email,
-            "nome": db_user.nome,
-            "phone": supabase_user.phone | "",
-            "aal": "aal1",
-            "iat": int(datetime.now(timezone.utc).timestamp()),
-            "role": "authenticated",
-            "aud": "authenticated",
-            "is_anonymous": supabase_user.is_anonymous | False,
+        # claims = {
+        #     "iss": f"{settings.SUPABASE_URL}/auth/v1",
+        #     "session_id": str(uuid.uuid4()),
+        #     "sub": str(supabase_id),
+        #     "email": db_user.email,
+        #     "phone": supabase_user.phone or "",
+        #     "app_metadata": {"provider": "email", "providers": ["email"]},
+        #     "user_metadata": {"nome": db_user.nome, "email_verified": True},
+        #     "aal": "aal1",
+        #     "amr": [
+        #         {
+        #             "method": "password",
+        #             "timestamp": int(datetime.now(timezone.utc).timestamp()),
+        #         }
+        #     ],
+        #     "iat": int(datetime.now(timezone.utc).timestamp()),
+        #     "role": "authenticated",
+        #     "aud": "authenticated",
+        #     "is_anonymous": supabase_user.is_anonymous or False,
+        # }
+
+        token = {
+            "user_id": str(supabase_id),
+            "claims": official_claims.get('claims', {}),
+            "authentication_method": "password",
         }
 
-        access_token, expires_at = create_token(user_data=token_data)
+        headers = {
+            "kid": "89ed0414-93b3-4382-ac29-65619f17ffd6",
+            "typ": "JWT",
+            "alg": "HS256",
+        }
+
+        access_token, expires_at = create_token(user_data=token, token_headers=headers)
 
         user_schema = User.model_validate(db_user)
         return Token(
@@ -107,6 +141,11 @@ class AuthService:
             supabase_user = auth_response.user
             supabase_id = str(supabase_user.id)
             refresh_token_supabase = auth_response.session.refresh_token
+            access_token_supabase = auth_response.session.access_token
+            official_claims = supabase.auth.get_claims(access_token_supabase)
+
+            global CURRENT_KID
+            CURRENT_KID = get_kid_from_supabase_token(access_token_supabase)
 
         except Exception as e:
             print(f"Erro no login do Supabase: {e}")
@@ -149,23 +188,40 @@ class AuthService:
                 detail="Usuário não encontrado na base local. Entre em contato com o suporte.",
             )
 
-        token_data = {
-            "iss": f"{settings.SUPABASE_URL}/auth/v1",
-            "session_id": str(uuid.uuid4()),
-            "sub": supabase_id,
-            "email": db_user.email,
-            "nome": db_user.nome,
-            "phone": supabase_user.phone | "",
-            "aal": "aal1",
-            "iat": int(datetime.now(timezone.utc).timestamp()),
-            "role": "authenticated",
-            "aud": "authenticated",
-            "is_anonymous": supabase_user.is_anonymous | False,
+        # custom_claims = {
+        #     "iss": f"{settings.SUPABASE_URL}/auth/v1",
+        #     "session_id": str(uuid.uuid4()),
+        #     "sub": str(supabase_id),
+        #     "email": db_user.email,
+        #     "phone": supabase_user.phone or "",
+        #     "app_metadata": {"provider": "email", "providers": ["email"]},
+        #     "user_metadata": {"nome": db_user.nome, "email_verified": True},
+        #     "amr": [
+        #         {
+        #             "method": "password",
+        #             "timestamp": int(datetime.now(timezone.utc).timestamp()),
+        #         }
+        #     ],
+        #     "aal": "aal1",
+        #     "iat": int(datetime.now(timezone.utc).timestamp()),
+        #     "role": "authenticated",
+        #     "aud": "authenticated",
+        #     "is_anonymous": supabase_user.is_anonymous or False,
+        # }
+
+        token = {
+            "user_id": str(supabase_id),
+            "claims": official_claims.get('claims', {}),
+            "authentication_method": "password",
         }
 
-        access_token, expires_at = create_token(
-            user_data=token_data,
-        )
+        headers = {
+            "kid": "89ed0414-93b3-4382-ac29-65619f17ffd6",
+            "typ": "JWT",
+            "alg": "HS256",
+        }
+
+        access_token, expires_at = create_token(user_data=token, token_headers=headers)
 
         user_schema = User.model_validate(db_user)
 
@@ -177,54 +233,24 @@ class AuthService:
             user=user_schema,
         )
 
-    async def refresh(self, user: UserLogin) -> RefreshTokenResponse:
+    async def refresh(self, refresh_token: str) -> RefreshTokenResponse:
         try:
-            existing_user = await self.user_repo.get_user_by_email(user.email)
-            supabase_id = user.supabase_id | existing_user.supabase_id
+            res = supabase.auth.refresh_session(refresh_token)
+        
+            if not res.session:
+                raise HTTPException(status_code=401, detail="Sessão expirada")
 
-            try:
-                auth_response = supabase.auth.sign_in_with_password(
-                    {"email": user.email, "password": user.senha}
-                )
-
-                supabase_user = auth_response.user
-                supabase_id = str(supabase_user.id)
-                new_refresh_token = auth_response.session.refresh_token
-
-            except Exception as e:
-                print(f"Erro no login do Supabase: {e}")
-
-            if not existing_user:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                    detail="Refresh token inválido",
-                )
-
-            new_access_token, expires_at = refresh_access_token(
-                user_data=existing_user, supabase_user=supabase_user
-            )
-
+            official_claims = supabase.auth.get_claims(res.session.access_token)
+            access_token_exp = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            official_claims.update('exp', access_token_exp.timestamp())
+            
             return RefreshTokenResponse(
-                token=new_access_token,
-                refresh_token=new_refresh_token,
-                token_type="bearer",
-                expires_at=expires_at,
+                token=res.session.access_token,
+                refresh_token=res.session.refresh_token,
+                expires_at=datetime.fromtimestamp(official_claims['exp'], tz=timezone.utc)
             )
-
-        except JWTError as e:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Refresh token inválido ou expirado",
-            )
-
-        except HTTPException as e:
-            raise e
-
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro ao renovar token: {str(e)}",
-            )
+            raise HTTPException(status_code=401, detail=f"Falha ao atualizar token. {str(e)}")
 
     async def logout(self, token: str):
         # Aplicar verificação se o token é do usuário que fez a requisição
