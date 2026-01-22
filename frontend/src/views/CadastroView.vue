@@ -2,6 +2,7 @@
 	<ViewContainer>
 		<template #view-content>
 			<AuthComponent
+				ref="authFormRef"
 				title="Criar conta"
 				subtitle="Preencha os dados para começar"
 				:inputs="inputs"
@@ -48,6 +49,8 @@ const confirmarSenha = ref('')
 
 const showPassword1 = ref(false)
 const showPassword2 = ref(false)
+
+const authFormRef = ref(null)
 
 const inputs: AuthInput[] = [
 	{
@@ -111,8 +114,34 @@ async function handleSubmit() {
 			setTokens(token, refresh_token, expires_at)
 			setUser(response.user)
 
+			const { data, error: sbError } = await supabase.auth.setSession({
+				access_token: token,
+				refresh_token: refresh_token,
+			})
+
+			if (sbError) {
+				console.error(
+					'Erro detalhado do Supabase:',
+					sbError.status,
+					sbError.message,
+				)
+				const session = await supabase.auth.signInWithPassword({
+					email: email.value,
+					password: senha.value,
+				})
+				console.log('Nova tentiva de conexão de sessão: ', session)
+
+				if (session.error) {
+					addMessage({
+						text: 'Aviso: Funções de tempo real desativadas.',
+						color: 'warning',
+					})
+				}
+			}
+
 			addMessage({ text: 'Conta criada com sucesso!', color: 'success' })
-			router.push({ name: 'disciplina' })
+			router.push({ name: 'home' })
+			authFormRef.value?.clearInputs()
 		}
 	} catch (error: any) {
 		console.error('Falha ao criar usuário:', error)
