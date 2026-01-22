@@ -14,6 +14,8 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 	const totalItems = ref(0)
 	const loading = ref(true)
 
+	const isRealtimeConnected = ref(false)
+
 	const disciplinas_quantity = computed(() => disciplinas.value?.length || 0)
 
 	const totalPages = computed(() => {
@@ -66,6 +68,8 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 			return
 		}
 
+		if (activeChannel && activeChannel.state === 'joined') return
+
 		if (activeChannel) {
 			await supabase.removeChannel(activeChannel)
 			activeChannel = null
@@ -102,10 +106,11 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 			)
 			.subscribe((status, err) => {
 				console.log('Status do Canal:', status)
-				if (status === 'CLOSED' || status === 'TIMED_OUT') {
-					console.log('Canal fechado ou temporariamente fora do ar.')
-				} else if (err) {
-					console.error('Erro ao se conectar ao canal:', err)
+				if(status === 'SUBSCRIBED'){
+					isRealtimeConnected.value = true
+				}else{
+					console.log('Erro no canal realtime:', err)
+					isRealtimeConnected.value = false
 				}
 			})
 
@@ -116,6 +121,7 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		if (activeChannel) {
 			await supabase.removeChannel(activeChannel)
 			activeChannel = null
+			isRealtimeConnected.value = false
 		}
 	}
 
@@ -144,6 +150,7 @@ export const useAprendizadoStore = defineStore('aprendizadoStore', () => {
 		cleanupRealtime,
 		setPage,
 		totalPages,
+		isRealtimeConnected,
 	}
 }, {
 	persist: {
