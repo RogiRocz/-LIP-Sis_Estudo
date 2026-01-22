@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { AuthInput } from '@/utils/authInputs'
 
-defineProps<{
+const props = defineProps<{
 	title: string
 	subtitle: string
 	inputs: AuthInput[]
@@ -71,6 +71,14 @@ defineProps<{
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
+
+const clearInputs = () => {
+	props.inputs.forEach((input) => {
+		input.model.value = ''
+	})
+}
+
+defineExpose({clearInputs})
 </script>
 
 <style scoped>
