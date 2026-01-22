@@ -44,8 +44,17 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Email já registrado"
             )
 
-        try:
+        hashed_password = get_password_hash(user_data.senha)
 
+        db_user = await self.user_repo.create_user(user_data, hashed_password)
+        db_user.ui_theme = settings.DEFAULT_THEME
+        db_user.intervalo_revisoes = settings.DEFAULT_REVISION_INTERVAL
+
+        await self.user_repo.update_user(db_user)
+
+        global CURRENT_KID
+
+        try:
             auth_response = supabase.auth.admin.create_user(
                 {
                     "email": user_data.email,
@@ -59,21 +68,16 @@ class AuthService:
             supabase_id = str(supabase_user.id)
 
         except Exception as e:
+            await self.db.delete(db_user)
+            await self.db.commit()
+            print(f"Erro detalhado do Supabase: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Erro ao criar usuário no sistema de autenticação: {str(e)}",
             )
 
-        hashed_password = get_password_hash(user_data.senha)
-
-        db_user = await self.user_repo.create_user(user_data, hashed_password)
-        db_user.ui_theme = settings.DEFAULT_THEME
-        db_user.intervalo_revisoes = settings.DEFAULT_REVISION_INTERVAL
         db_user.supabase_id = uuid.UUID(supabase_id)
-
         await self.user_repo.update_user(db_user)
-
-        global CURRENT_KID
 
         try:
             auth_response = supabase.auth.sign_in_with_password(
