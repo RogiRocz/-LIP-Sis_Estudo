@@ -1,8 +1,7 @@
 import { Usuario } from '@/utils/apiTypes'
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, getCurrentInstance, ref } from 'vue'
 import { getProfile } from '@/api/user'
-import { useTheme } from 'vuetify'
 import { DEFAULT_THEME } from '@/config/vuetify'
 import router from '@/router'
 import { supabase } from '@/config/supabase'
@@ -23,15 +22,13 @@ export const useUserStore = defineStore('userStore', () => {
 	const refresh_token = ref(localStorage.getItem('refreshToken') || null)
 	const expires_at = ref(localStorage.getItem('expiresAt') || null)
 	const user = ref<Usuario | null>(null)
-	const theme = useTheme()
+	const currentThemeName = ref('light')
 
 	// Getters
 	const isDrawerOpen = computed(() => drawerAuth.value)
 	const isAuthenticated = computed(() => !!token.value)
 	const getUser = computed(() => user.value)
-	const isDarkTheme = computed(() => {
-		return theme?.global?.name?.value === 'dark'
-	})
+	const isDarkTheme = computed(() => currentThemeName.value === 'dark')
 	const intervalos = computed(() => user.value?.intervalo_revisoes)
 
 	// Actions
@@ -49,7 +46,7 @@ export const useUserStore = defineStore('userStore', () => {
 		expires_at.value = newExpiresAt
 
 		if (newToken) {
-			localStorage.setItem('authToken', newToken)
+			localStorage.setItem('authToken', newToken)	
 			if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken)
 			if (newExpiresAt) localStorage.setItem('expiresAt', newExpiresAt)
 		} else {
@@ -88,7 +85,7 @@ export const useUserStore = defineStore('userStore', () => {
 		refresh_token.value = null
 		expires_at.value = null
 		user.value = null
-		
+
 		router.replace({ name: 'login' })
 
 		updateTheme(ThemeMap[DEFAULT_THEME])
@@ -110,19 +107,8 @@ export const useUserStore = defineStore('userStore', () => {
 	}
 
 	const updateTheme = (themeName: string) => {
-		theme.change(themeName)
-	}
-
-	const setTheme = async (isDark: boolean) => {
-		const themeName = isDark ? 'dark' : 'light'
-
-		if (theme?.global) {
-			theme.global.name.value = themeName
-		}
-
-		if (user.value) {
-			user.value.ui_theme = themeName
-		}
+		const formattedTheme = ThemeMap[themeName] || 'light'
+		currentThemeName.value = formattedTheme
 	}
 
 	return {
@@ -135,6 +121,7 @@ export const useUserStore = defineStore('userStore', () => {
 		expires_at,
 		setUser,
 		isAuthenticated,
+		currentThemeName,
 		getUser,
 		isDrawerOpen,
 		toggleDrawerAuth,
@@ -142,7 +129,6 @@ export const useUserStore = defineStore('userStore', () => {
 		fetchUser,
 		isDarkTheme,
 		intervalos,
-		setTheme,
 		updateTheme,
 	}
 })
