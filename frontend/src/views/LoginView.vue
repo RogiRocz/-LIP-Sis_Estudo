@@ -28,14 +28,13 @@ import { login } from '@/api/auth'
 import AuthComponent from '@/components/AuthComponent.vue'
 import ViewContainer from '@/components/ViewContainer.vue'
 import { supabase } from '@/config/supabase'
-import { useAprendizadoStore } from '@/stores/useAprendizadoStore'
 import { useSnackbarStore } from '@/stores/useSnackbarStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { AuthInput } from '@/utils/authInputs'
 import { required, validEmail, validPassword } from '@/utils/rulesAuth'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
-import { useRouter } from 'vuetify/lib/composables/router.mjs'
+import { useRouter } from 'vue-router'
 
 const email = ref('')
 const senha = ref('')
@@ -90,11 +89,6 @@ async function handleSubmit() {
 				refresh_token: refresh_token,
 			})
 
-			console.log('Dados pra debug: ', {
-				response,
-				data,
-			})
-
 			if (sbError) {
 				console.error(
 					'Erro detalhado do Supabase:',
@@ -113,14 +107,12 @@ async function handleSubmit() {
 						color: 'warning',
 					})
 				}
-			} else if (data.session) {
-				console.log('Sessão Supabase iniciada')
-				console.log('Info da sessão do supabase: ', data.session)
 			}
 
 			router.replace({ name: 'home' })
 		}
 	} catch (error: any) {
+		console.error(error)
 		addMessage({
 			text: error.response.data.detail || 'Erro ao logar',
 			color: 'error',
