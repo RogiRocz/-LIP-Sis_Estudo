@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 
 
 class User(Base, TimestampMixin):
-    __tablename__ = 'Usuario'
+    __tablename__ = "Usuario"
     ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nome = Column(String(100), index=True)
     email = Column(String(100), unique=True, index=True, nullable=False)
