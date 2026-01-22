@@ -90,6 +90,7 @@ onMounted(async () => {
 
 	if (isAuthenticated.value) {
 		await fetchUser()
+		useAprendizadoStore().setupRealtime()
 	}
 })
 
