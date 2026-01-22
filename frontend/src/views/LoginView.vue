@@ -2,6 +2,7 @@
 	<ViewContainer>
 		<template #view-content>
 			<AuthComponent
+				ref="authFormRef"
 				title="Bem vindo de volta!"
 				subtitle="Entre com suas credenciais para continuar"
 				:inputs="inputs"
@@ -40,6 +41,8 @@ const email = ref('')
 const senha = ref('')
 
 const showPassword = ref(false)
+
+const authFormRef = ref(null)
 
 const inputs: AuthInput[] = [
 	{
@@ -110,6 +113,7 @@ async function handleSubmit() {
 			}
 
 			router.replace({ name: 'home' })
+			authFormRef.value?.clearInputs()
 		}
 	} catch (error: any) {
 		console.error(error)
