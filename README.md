@@ -29,8 +29,10 @@ Certifique-se de ter as seguintes ferramentas instaladas nas versões especifica
 3.  **Crie um arquivo `.env` na pasta `backend/src` com as seguintes variáveis:**
 
     ```
-    DATABASE_URL="postgresql+asyncpg://user:password@host:port/database"
-    SECRET_KEY="your_secret_key"
+    DATABASE_URL="your_database_url"
+    SUPABASE_URL="your_supabase_url"
+    SUPABASE_SECRET_KEY="your_supabase_secret_key"
+    SUPABASE_PUBLIC_KEY="your_supabase_public_key"
     ```
 
 ### Frontend
