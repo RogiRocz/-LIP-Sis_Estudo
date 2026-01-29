@@ -1,5 +1,7 @@
 # LIP - Sis_Estudo
 
+O StudyFlow é um sistema de gerenciamento de estudos projetado para ajudar os usuários a organizar suas disciplinas, tópicos e agendamentos de revisão, otimizando assim seu processo de aprendizado.
+
 ## Pré-requisitos
 
 Certifique-se de ter as seguintes ferramentas instaladas nas versões especificadas:
